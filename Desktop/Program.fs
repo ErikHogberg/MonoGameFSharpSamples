@@ -1,4 +1,4 @@
-﻿open Game
+﻿open SpaceGame
 
 [<EntryPoint>]
 let main argv =
