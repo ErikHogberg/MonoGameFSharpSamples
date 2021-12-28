@@ -1,5 +1,4 @@
-﻿// module Game
-namespace SpaceGame
+﻿namespace SpaceGame
 
 open System
 
@@ -9,13 +8,17 @@ open Microsoft.Xna.Framework.Graphics
 open Microsoft.Xna.Framework.Content
 
 open MonoGame.Extended
+open MonoGame.Extended.Input.InputListeners
 
-type Game1() as self =
+open Ship
+open Tools
+
+type Game1() as x =
     inherit Game()
 
-    do self.Content.RootDirectory <- "Content"
+    do x.Content.RootDirectory <- "Content"
 
-    let graphics = new GraphicsDeviceManager(self)
+    let graphics = new GraphicsDeviceManager(x)
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
 
     let mutable rot = 0.0f
@@ -24,7 +27,16 @@ type Game1() as self =
     val mutable dot: Texture2D
 
     [<DefaultValue>]
+    val mutable ship: Texture2D
+
+    [<DefaultValue>]
     val mutable font: SpriteFont
+
+    let mutable mouseListener = new MouseListener()
+
+    [<DefaultValue>]
+    val mutable ship1: SpaceShip// = new SpaceShip(ship)
+
 
     override this.Initialize() =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
@@ -42,17 +54,23 @@ type Game1() as self =
 
     override this.LoadContent() =
         // printfn "content root: %s" this.Content.RootDirectory
-        this.dot <- self.Content.Load "1px"
-        this.font <- self.Content.Load "Fira Code"
+        this.dot <- this.Content.Load "1px"
+        this.ship <- this.Content.Load "ship"
+        this.font <- this.Content.Load "Fira Code"
+
+        Singleton.Instance.Set("dot", this.dot)
+
+        this.ship1 <- new SpaceShip(this.ship, new Point(100, 100) ,150)
         ()
 
     override this.Update(gameTime) =
         if Keyboard.GetState().IsKeyDown Keys.Escape then
-            self.Exit()
+            this.Exit()
 
         rot <-
             rot
-            + float32 gameTime.ElapsedGameTime.TotalSeconds
+            // + float32 gameTime.ElapsedGameTime.TotalSeconds
+            + gameTime.GetElapsedSeconds()
 
         ()
 
@@ -68,7 +86,7 @@ type Game1() as self =
         )
 
         spriteBatch.Draw(
-            self.dot,
+            this.dot,
             new Rectangle(100, 100, 100, 100),
             Nullable(),
             Color.Crimson,
@@ -77,9 +95,16 @@ type Game1() as self =
             SpriteEffects.None,
             0f
         )
+        
+        // spriteBatch.Draw(
+        //     this.ship,
+        //     new Rectangle(200, 100, 100, 100),
+        //     Color.Crimson
+        // )
+        this.ship1.Draw spriteBatch
 
         spriteBatch.DrawString(
-            self.font,
+            this.font,
             "Fira Code",
             new Vector2(200f, 30f),
             Color.Gold,

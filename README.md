@@ -1,6 +1,6 @@
 # SpaceStratMGFS
 Space strategy game in F# using MonoGame.
-A small winter holiday hobby project.
+A small winter holiday hobby project to learn F#.
 
 ## Current state
 
