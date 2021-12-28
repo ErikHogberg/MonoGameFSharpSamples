@@ -25,10 +25,10 @@
 /processorParam:TextureFormat=Color
 /build:1px.png
 
-#begin Arial.spritefont
+#begin Fira Code.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
-/processorParam:TextureFormat=Compressed
-/build:Arial.spritefont
+/processorParam:TextureFormat=NoChange
+/build:Fira Code.spritefont
 

@@ -1,9 +1,10 @@
 # SpaceStratMGFS
-Space strategy game in F# using MonoGame
+Space strategy game in F# using MonoGame.
+A small winter holiday hobby project.
 
 ## Current state
 
-Only a blank screen at the moment.
+Only a spinning box and text test at the moment.
 
 ## How to build/run
 
