@@ -4,8 +4,8 @@ A small winter holiday hobby project to learn F#.
 
 ## Current state
 
-Only a spinning box at the moment.
-Uses MonoGame.Extended entities.
+Only a spinning box at the moment, and some pretty rain using MonoGame.Extended entities.
+Dunno what I would use rain for in a space game, might reuse it for asteroids :)
 
 ## How to build/run
 

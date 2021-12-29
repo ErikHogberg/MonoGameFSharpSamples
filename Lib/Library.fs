@@ -18,6 +18,7 @@ open Ship
 open Tools
 open RenderSystem
 open UpdateSystem
+open Rain
 
 type Game1() as x =
     inherit Game()
@@ -30,10 +31,10 @@ type Game1() as x =
     [<DefaultValue>]
     val mutable camera: OrthographicCamera
 
-    let mutable rot = 0.0f
-
     [<DefaultValue>]
     val mutable dot: Texture2D
+    [<DefaultValue>]
+    val mutable rain1: RainfallSystem
 
     // [<DefaultValue>]
     // val mutable ship: Texture2D
@@ -53,6 +54,8 @@ type Game1() as x =
         this.IsFixedTimeStep <- false
         this.IsMouseVisible <- true
 
+        this.Window.AllowUserResizing <- true
+
         graphics.PreferredBackBufferWidth <- 1280
         graphics.PreferredBackBufferHeight <- 720
         graphics.PreferMultiSampling <- false
@@ -64,7 +67,7 @@ type Game1() as x =
         this.Components.Add listenerComponent
 
         let viewportAdapter =
-            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
+            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
 
         this.camera <- new OrthographicCamera(viewportAdapter)
 
@@ -86,12 +89,20 @@ type Game1() as x =
 
         // this.ship1 <- new SpaceShip(this.ship, new Point(100, 100), 150)
 
+        this.rain1 <- new RainfallSystem(new Rectangle(100, 100, 1000, 400))
+        this.rain1.WindStrength <- 60f
+
         let worldBuilder = new WorldBuilder()
 
         let world =
             worldBuilder
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, this.camera))
                 .AddSystem(new TransformUpdateSystem())
+
+                .AddSystem(this.rain1)
+                .AddSystem(new RainExpirySystem())
+                .AddSystem(new RainRenderSystem(this.GraphicsDevice, this.camera))
+
                 .Build()
 
         this.Components.Add(world)
@@ -108,11 +119,6 @@ type Game1() as x =
     override this.Update(gameTime) =
         if Keyboard.GetState().IsKeyDown Keys.Escape then
             this.Exit()
-
-        rot <-
-            rot
-            // + float32 gameTime.ElapsedGameTime.TotalSeconds
-            + gameTime.GetElapsedSeconds()
 
         base.Update gameTime
         ()

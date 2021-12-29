@@ -9,25 +9,28 @@ open MonoGame.Extended.Entities.Systems
 open MonoGame.Extended.Sprites
 
 
-type SpriteRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera)=
-    inherit EntityDrawSystem(Aspect.All(typedefof<Sprite>, typedefof<Transform2>))
+type SpriteRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
+    inherit EntityDrawSystem(Aspect
+        .All(typedefof<Sprite>, typedefof<Transform2>)
+        .Exclude(typedefof<Rain.Raindrop>))
 
     let graphicsDevice = graphicsDevice
     let camera = camera
-    let spriteBatch = new SpriteBatch (graphicsDevice)
+    let spriteBatch = new SpriteBatch(graphicsDevice)
 
     [<DefaultValue>]
     val mutable transformMapper: ComponentMapper<Transform2>
+
     [<DefaultValue>]
     val mutable spriteMapper: ComponentMapper<Sprite>
 
     override this.Initialize(mapperService: IComponentMapperService) =
         this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.spriteMapper<- mapperService.GetMapper<Sprite>()
+        this.spriteMapper <- mapperService.GetMapper<Sprite>()
         ()
 
     override this.Draw(gameTime: GameTime) =
-        let transformMatrix = camera.GetViewMatrix();
+        let transformMatrix = camera.GetViewMatrix()
 
         spriteBatch.Begin(transformMatrix = transformMatrix)
 
@@ -35,6 +38,6 @@ type SpriteRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCame
             let transform = this.transformMapper.Get entityId
             let sprite = this.spriteMapper.Get entityId
             spriteBatch.Draw(sprite, transform)
-        
+
         spriteBatch.End()
         ()
