@@ -4,7 +4,8 @@ A small winter holiday hobby project to learn F#.
 
 ## Current state
 
-Only a spinning box and text test at the moment.
+Only a spinning box at the moment.
+Uses MonoGame.Extended entities.
 
 ## How to build/run
 

@@ -9,9 +9,15 @@ open Microsoft.Xna.Framework.Content
 
 open MonoGame.Extended
 open MonoGame.Extended.Input.InputListeners
+open MonoGame.Extended.Entities
+open MonoGame.Extended.Sprites
+open MonoGame.Extended.ViewportAdapters
+
 
 open Ship
 open Tools
+open RenderSystem
+open UpdateSystem
 
 type Game1() as x =
     inherit Game()
@@ -21,25 +27,28 @@ type Game1() as x =
     let graphics = new GraphicsDeviceManager(x)
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
 
+    [<DefaultValue>]
+    val mutable camera: OrthographicCamera
+
     let mutable rot = 0.0f
 
     [<DefaultValue>]
     val mutable dot: Texture2D
 
-    [<DefaultValue>]
-    val mutable ship: Texture2D
+    // [<DefaultValue>]
+    // val mutable ship: Texture2D
 
-    [<DefaultValue>]
-    val mutable font: SpriteFont
+    // [<DefaultValue>]
+    // val mutable font: SpriteFont
+
 
     let mutable mouseListener = new MouseListener()
 
-    [<DefaultValue>]
-    val mutable ship1: SpaceShip// = new SpaceShip(ship)
+    // [<DefaultValue>]
+    // val mutable ship1: SpaceShip // = new SpaceShip(ship)
 
 
     override this.Initialize() =
-        spriteBatch <- new SpriteBatch(this.GraphicsDevice)
 
         this.IsFixedTimeStep <- false
         this.IsMouseVisible <- true
@@ -49,18 +58,51 @@ type Game1() as x =
         graphics.PreferMultiSampling <- false
         graphics.ApplyChanges()
 
+        let listenerComponent =
+            new InputListenerComponent(this, mouseListener)
+
+        this.Components.Add listenerComponent
+
+        let viewportAdapter =
+            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
+
+        this.camera <- new OrthographicCamera(viewportAdapter)
+
+
         base.Initialize()
         ()
 
     override this.LoadContent() =
+        spriteBatch <- new SpriteBatch(this.GraphicsDevice)
+
         // printfn "content root: %s" this.Content.RootDirectory
         this.dot <- this.Content.Load "1px"
-        this.ship <- this.Content.Load "ship"
-        this.font <- this.Content.Load "Fira Code"
+        // this.ship <- this.Content.Load "ship"
+        // this.font <- this.Content.Load "Fira Code"
 
-        Singleton.Instance.Set("dot", this.dot)
+        // let dot = this.Content.Load "1px"
 
-        this.ship1 <- new SpaceShip(this.ship, new Point(100, 100) ,150)
+        // Singleton.Instance.Set("dot", this.dot)
+
+        // this.ship1 <- new SpaceShip(this.ship, new Point(100, 100), 150)
+
+        let worldBuilder = new WorldBuilder()
+
+        let world =
+            worldBuilder
+                .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, this.camera))
+                .AddSystem(new TransformUpdateSystem())
+                .Build()
+
+        this.Components.Add(world)
+
+        let testEntity = world.CreateEntity()
+        testEntity.Attach(new Transform2(100f, 300f, 0f, 100f, 100f))
+        let mutable dotSprite = new Sprite(this.dot)
+        dotSprite.Color <- Color.Goldenrod
+        testEntity.Attach(dotSprite)
+
+
         ()
 
     override this.Update(gameTime) =
@@ -72,48 +114,11 @@ type Game1() as x =
             // + float32 gameTime.ElapsedGameTime.TotalSeconds
             + gameTime.GetElapsedSeconds()
 
+        base.Update gameTime
         ()
 
     override this.Draw(gameTime) =
         this.GraphicsDevice.Clear Color.CornflowerBlue
 
-        spriteBatch.Begin(
-            SpriteSortMode.Deferred,
-            BlendState.AlphaBlend,
-            SamplerState.PointClamp,
-            DepthStencilState.None,
-            RasterizerState.CullCounterClockwise
-        )
-
-        spriteBatch.Draw(
-            this.dot,
-            new Rectangle(100, 100, 100, 100),
-            Nullable(),
-            Color.Crimson,
-            rot,
-            Vector2.One * 0.5f,
-            SpriteEffects.None,
-            0f
-        )
-        
-        // spriteBatch.Draw(
-        //     this.ship,
-        //     new Rectangle(200, 100, 100, 100),
-        //     Color.Crimson
-        // )
-        this.ship1.Draw spriteBatch
-
-        spriteBatch.DrawString(
-            this.font,
-            "Fira Code",
-            new Vector2(200f, 30f),
-            Color.Gold,
-            0f,
-            Vector2.One * 0.5f,
-            Vector2.One * 3f,
-            SpriteEffects.FlipVertically,
-            1f
-        )
-
-        spriteBatch.End()
+        base.Draw gameTime
         ()
