@@ -14,6 +14,7 @@
     <Compile Include="Parts/Tools.fs" />
     <Compile Include="Parts/Ship.fs" />
     <Compile Include="Parts/Rain.fs" />
+    <Compile Include="Parts/Asteroids.fs" />
     <Compile Include="Parts/RenderSystem.fs" />
     <Compile Include="Parts/UpdateSystem.fs" />
     <Compile Include="Library.fs" />

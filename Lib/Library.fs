@@ -15,6 +15,7 @@ open MonoGame.Extended.ViewportAdapters
 
 
 open Ship
+open Asteroids
 open Tools
 open RenderSystem
 open UpdateSystem
@@ -35,6 +36,8 @@ type Game1() as x =
     val mutable dot: Texture2D
     [<DefaultValue>]
     val mutable rain1: RainfallSystem
+    [<DefaultValue>]
+    val mutable asteroids1: AsteroidShowerSystem
 
     // [<DefaultValue>]
     // val mutable ship: Texture2D
@@ -42,6 +45,9 @@ type Game1() as x =
     // [<DefaultValue>]
     // val mutable font: SpriteFont
 
+
+    let box = new RectangleF(600f, 200f, 50f,80f)
+    let bubble = new EllipseF(new Vector2(600f, 200f), 50f,80f)
 
     let mutable mouseListener = new MouseListener()
 
@@ -89,8 +95,13 @@ type Game1() as x =
 
         // this.ship1 <- new SpaceShip(this.ship, new Point(100, 100), 150)
 
-        this.rain1 <- new RainfallSystem(new Rectangle(100, 100, 1000, 400))
+        this.rain1 <- new RainfallSystem(new Rectangle(100, 100, 600, 300))
         this.rain1.WindStrength <- 60f
+        this.rain1.Box <- box
+
+        this.asteroids1 <- new AsteroidShowerSystem(new EllipseF(new Vector2(100f,100f), 600f,300f))
+        this.asteroids1.Bubble <- bubble
+        this.asteroids1.WindStrength <- 30f
 
         let worldBuilder = new WorldBuilder()
 
@@ -99,9 +110,13 @@ type Game1() as x =
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, this.camera))
                 .AddSystem(new TransformUpdateSystem())
 
-                .AddSystem(this.rain1)
-                .AddSystem(new RainExpirySystem())
-                .AddSystem(new RainRenderSystem(this.GraphicsDevice, this.camera))
+                // .AddSystem(this.rain1)
+                // .AddSystem(new RainExpirySystem())
+                // .AddSystem(new RainRenderSystem(this.GraphicsDevice, this.camera))
+
+                .AddSystem(this.asteroids1)
+                .AddSystem(new AsteroidExpirySystem())
+                .AddSystem(new AsteroidRenderSystem(this.GraphicsDevice, this.camera))
 
                 .Build()
 
@@ -112,7 +127,6 @@ type Game1() as x =
         let mutable dotSprite = new Sprite(this.dot)
         dotSprite.Color <- Color.Goldenrod
         testEntity.Attach(dotSprite)
-
 
         ()
 
@@ -125,6 +139,13 @@ type Game1() as x =
 
     override this.Draw(gameTime) =
         this.GraphicsDevice.Clear Color.CornflowerBlue
+
+        // spriteBatch.Begin(transformMatrix = this.camera.GetViewMatrix())
+
+        // spriteBatch.DrawRectangle(box, Color.AliceBlue)
+        // spriteBatch.DrawEllipse(bubble.Center, new Vector2(bubble.RadiusX, bubble.RadiusY), 10, Color.Azure)
+
+        // spriteBatch.End()
 
         base.Draw gameTime
         ()

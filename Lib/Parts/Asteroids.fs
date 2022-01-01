@@ -1,4 +1,4 @@
-module Rain
+module Asteroids
 
 open Microsoft.Xna.Framework
 open MonoGame.Extended
@@ -6,13 +6,13 @@ open MonoGame.Extended.Entities
 open MonoGame.Extended.Entities.Systems
 open Microsoft.Xna.Framework.Graphics
 
-type RainExpiry =
+type AsteroidExpiry =
     val mutable TimeRemaining: float32
 
     new(timeRemaining: float32) = { TimeRemaining = timeRemaining }
 
 
-type Raindrop(velocity: Vector2, size: float32, startY: float32) =
+type Asteroid(velocity: Vector2, size: float32, startY: float32) =
 
     let mutable velocity = velocity
     let mutable size = size
@@ -30,14 +30,14 @@ type Raindrop(velocity: Vector2, size: float32, startY: float32) =
         with get () = startY
         and set (value) = startY <- value
 
-type RainExpirySystem() =
-    inherit EntityProcessingSystem(Aspect.All(typedefof<RainExpiry>))
+type AsteroidExpirySystem() =
+    inherit EntityProcessingSystem(Aspect.All(typedefof<AsteroidExpiry>))
 
     [<DefaultValue>]
-    val mutable expiryMapper: ComponentMapper<RainExpiry>
+    val mutable expiryMapper: ComponentMapper<AsteroidExpiry>
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.expiryMapper <- mapperService.GetMapper<RainExpiry>()
+        this.expiryMapper <- mapperService.GetMapper<AsteroidExpiry>()
         ()
 
     override this.Process(gameTime: GameTime, enityId: int) =
@@ -53,8 +53,8 @@ type RainExpirySystem() =
         ()
 
 // type RainfallSystem(boundaries: Rectangle, minRate: float, maxRate: float, rateIsPerWidth: bool) =
-type RainfallSystem(boundaries: Rectangle) =
-    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<Raindrop>))
+type AsteroidShowerSystem(boundaries: EllipseF) =
+    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<Asteroid>))
 
 
     let random = new FastRandom()
@@ -63,13 +63,13 @@ type RainfallSystem(boundaries: Rectangle) =
     val mutable transformMapper: ComponentMapper<Transform2>
 
     [<DefaultValue>]
-    val mutable raindropMapper: ComponentMapper<Raindrop>
+    val mutable asteroidMapper: ComponentMapper<Asteroid>
 
     [<DefaultValue>]
-    val mutable expiryMapper: ComponentMapper<RainExpiry>
+    val mutable expiryMapper: ComponentMapper<AsteroidExpiry>
 
-    let mutable box = new RectangleF()
-
+    let mutable bubble = new EllipseF(new Vector2( 0f,0f),0f,0f)
+    
     let MinSpawnDelay = 0.0f
     let MaxSpawnDelay = 0.1f
     let mutable spawnDelay = MaxSpawnDelay
@@ -79,23 +79,23 @@ type RainfallSystem(boundaries: Rectangle) =
     // TODO: make public
     let mutable windStrength = 0f
 
-    member this.Box 
+    member this.Bubble 
         // with get() = box
-        with set(value) = box <- value
+        with set(value) = bubble <- value
 
     member this.WindStrength
         with set (value) = windStrength <- value
 
-    member this.CreateRaindrop(position: Vector2, velocity: Vector2, size: float32) =
+    member this.CreateAsteroid(position: Vector2, velocity: Vector2, size: float32) =
         let entity = this.CreateEntity()
         entity.Attach(new Transform2(position))
-        entity.Attach(new Raindrop(velocity, size, float32 boundaries.Top))
+        entity.Attach(new Asteroid(velocity, size, float32 boundaries.Top))
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
         this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.raindropMapper <- mapperService.GetMapper<Raindrop>()
-        this.expiryMapper <- mapperService.GetMapper<RainExpiry>()
+        this.asteroidMapper <- mapperService.GetMapper<Asteroid>()
+        this.expiryMapper <- mapperService.GetMapper<AsteroidExpiry>()
         ()
 
     override this.Update(gameTime: GameTime) =
@@ -103,45 +103,44 @@ type RainfallSystem(boundaries: Rectangle) =
 
         for entityId in this.ActiveEntities do
             let transform = this.transformMapper.Get(entityId)
-            let raindrop = this.raindropMapper.Get(entityId)
+            let asteroid = this.asteroidMapper.Get(entityId)
 
-            raindrop.Velocity <- raindrop.Velocity + new Vector2(0f, 30f) * dt
+            asteroid.Velocity <- asteroid.Velocity + new Vector2(0f, 30f) * dt
 
             transform.Position <-
                 transform.Position
-                + (raindrop.Velocity + new Vector2(windStrength, 0f))
+                + (asteroid.Velocity + new Vector2(windStrength, 0f))
                   * dt
 
             let dropHitBox =
-                box.Contains(transform.Position)
+                bubble.Contains(transform.Position)
 
-            let mutable splashSpawnY = boundaries.Bottom - 1
-
-            if dropHitBox then
-                let boxTop = box.Top
-                splashSpawnY <- int boxTop - 1
+            let inBoundary =
+                true
+                // boundaries.Contains(transform.Position)
 
             let hasExpiry = this.expiryMapper.Has(entityId)
 
-            if ((transform.Position.Y >= float32 boundaries.Bottom
+            if (((not inBoundary)
                  || dropHitBox)
                 && (not hasExpiry)) then
                 for i in 0 .. 3 do
                     let velocity =
                         new Vector2(
                             random.NextSingle(-100f, 100f),
-                            -raindrop.Velocity.Y
+                            -asteroid.Velocity.Y
                             * random.NextSingle(0.1f, 0.2f)
                         )
+
                     // var id = CreateRaindrop(transform.Position.SetY(splashSpawnY), velocity, (i + 1) * 0.5f);
                     let id =
-                        this.CreateRaindrop(
+                        this.CreateAsteroid(
                             transform.Position.SetY(transform.Position.Y - 1f),
                             velocity,
                             (float32 i + 1f) * 0.5f
                         )
 
-                    this.expiryMapper.Put(id, new RainExpiry(1f))
+                    this.expiryMapper.Put(id, new AsteroidExpiry(1f))
 
                 this.DestroyEntity(entityId)
 
@@ -149,6 +148,7 @@ type RainfallSystem(boundaries: Rectangle) =
 
         spawnDelay <- spawnDelay - dt
 
+        // TODO: make frame-indipendent
         if spawnDelay <= 0f then
             for q in 0 .. 50 do
                 let position =
@@ -159,7 +159,7 @@ type RainfallSystem(boundaries: Rectangle) =
                     )
 
                 let id =
-                    this.CreateRaindrop(position, Vector2.Zero, random.NextSingle(2f, 4f))
+                    this.CreateAsteroid(position, Vector2.Zero, random.NextSingle(2f, 4f))
 
                 ()
 
@@ -167,8 +167,8 @@ type RainfallSystem(boundaries: Rectangle) =
 
         ()
 
-type RainRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
-    inherit EntityDrawSystem(Aspect.All(typedefof<Transform2>, typedefof<Raindrop>))
+type AsteroidRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
+    inherit EntityDrawSystem(Aspect.All(typedefof<Transform2>, typedefof<Asteroid>))
 
     let graphicsDevice = graphicsDevice
     let camera = camera
@@ -178,12 +178,12 @@ type RainRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera
     val mutable transformMapper: ComponentMapper<Transform2>
 
     [<DefaultValue>]
-    val mutable raindropMapper: ComponentMapper<Raindrop>
+    val mutable asteroidMapper: ComponentMapper<Asteroid>
 
 
     override this.Initialize(mapperService: IComponentMapperService) =
         this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.raindropMapper <- mapperService.GetMapper<Raindrop>()
+        this.asteroidMapper <- mapperService.GetMapper<Asteroid>()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -193,10 +193,10 @@ type RainRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera
 
         for entity in this.ActiveEntities do
             let transform = this.transformMapper.Get(entity)
-            let raindrop = this.raindropMapper.Get(entity)
+            let asteroid = this.asteroidMapper.Get(entity)
 
-            if transform.Position.Y > raindrop.StartY then
-                spriteBatch.FillRectangle(transform.Position, new Size2(raindrop.Size, raindrop.Size), Color.LightBlue)
+            if transform.Position.Y > asteroid.StartY then
+                spriteBatch.FillRectangle(transform.Position, new Size2(asteroid.Size, asteroid.Size), Color.LightBlue)
 
             ()
 
