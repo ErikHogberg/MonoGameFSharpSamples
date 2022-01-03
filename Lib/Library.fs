@@ -19,7 +19,6 @@ open Asteroids
 open Tools
 open RenderSystem
 open UpdateSystem
-open Rain
 
 type Game1() as x =
     inherit Game()
@@ -34,8 +33,6 @@ type Game1() as x =
 
     [<DefaultValue>]
     val mutable dot: Texture2D
-    [<DefaultValue>]
-    val mutable rain1: RainfallSystem
     [<DefaultValue>]
     val mutable asteroids1: AsteroidShowerSystem
 
@@ -95,11 +92,7 @@ type Game1() as x =
 
         // this.ship1 <- new SpaceShip(this.ship, new Point(100, 100), 150)
 
-        this.rain1 <- new RainfallSystem(new Rectangle(100, 100, 600, 300))
-        this.rain1.WindStrength <- 60f
-        this.rain1.Box <- box
-
-        this.asteroids1 <- new AsteroidShowerSystem(new EllipseF(new Vector2(400f,400f), 300f,200f))
+        this.asteroids1 <- new AsteroidShowerSystem(new EllipseF(new Vector2(400f,400f), 600f,300f))
         this.asteroids1.Bubble <- bubble
         this.asteroids1.WindStrength <- 30f
 
@@ -108,15 +101,11 @@ type Game1() as x =
         let world =
             worldBuilder
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, this.camera))
-                .AddSystem(new TransformUpdateSystem())
+                // .AddSystem(new TransformUpdateSystem())
 
-                .AddSystem(this.rain1)
-                .AddSystem(new RainExpirySystem())
-                .AddSystem(new RainRenderSystem(this.GraphicsDevice, this.camera))
-
-                // .AddSystem(this.asteroids1)
-                // .AddSystem(new AsteroidExpirySystem())
-                // .AddSystem(new AsteroidRenderSystem(this.GraphicsDevice, this.camera))
+                .AddSystem(this.asteroids1)
+                .AddSystem(new AsteroidExpirySystem())
+                .AddSystem(new AsteroidRenderSystem(this.GraphicsDevice, this.camera))
 
                 .Build()
 
@@ -142,8 +131,8 @@ type Game1() as x =
 
         spriteBatch.Begin(transformMatrix = this.camera.GetViewMatrix())
 
-        spriteBatch.DrawRectangle(box, Color.AliceBlue)
-        spriteBatch.DrawEllipse(bubble.Center, new Vector2(bubble.RadiusX, bubble.RadiusY), 10, Color.Azure)
+        // spriteBatch.DrawRectangle(box, Color.AliceBlue)
+        spriteBatch.DrawEllipse(bubble.Center, new Vector2(bubble.RadiusX, bubble.RadiusY), 32, Color.Azure)
 
         spriteBatch.End()
 

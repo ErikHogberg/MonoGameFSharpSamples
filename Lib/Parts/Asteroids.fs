@@ -16,6 +16,7 @@ type Asteroid(velocity: Vector2, size: float32) =
 
     let mutable velocity = velocity
     let mutable size = size
+    let mutable entered = false
 
     member this.Velocity
         with get () = velocity
@@ -24,6 +25,10 @@ type Asteroid(velocity: Vector2, size: float32) =
     member this.Size
         with get () = size
         and set (value) = size <- value
+
+    member this.Entered
+        with get () = entered
+        and set (value) = entered <-value
 
 
 type AsteroidExpirySystem() =
@@ -64,7 +69,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
     [<DefaultValue>]
     val mutable expiryMapper: ComponentMapper<AsteroidExpiry>
 
-    let mutable bubble = new EllipseF(Vector2.One,1f,1f)
+    let mutable bubble = new EllipseF(Vector2.One, 1f, 1f)
 
     let MinSpawnDelay = 0.0f
     let MaxSpawnDelay = 0.1f
@@ -75,7 +80,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
     let mutable windStrength = 0f
 
     member this.Bubble
-        with set(value) = bubble <- value
+        with set (value) = bubble <- value
 
     member this.WindStrength
         with set (value) = windStrength <- value
@@ -99,23 +104,22 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
             let transform = this.transformMapper.Get(entityId)
             let asteroid = this.asteroidMapper.Get(entityId)
 
-            // asteroid.Velocity <- asteroid.Velocity + new Vector2(0f, 30f) * dt
 
             transform.Position <-
                 transform.Position
                 + (asteroid.Velocity + new Vector2(windStrength, 0f))
                   * dt
 
-            let dropHitBox =
-                bubble.Contains(transform.Position)
+            let dropHitBox = bubble.Contains(transform.Position)
 
-            // let inBoundary =
-            //     true
-            //     boundaries.Contains(transform.Position)
+            let inBoundary =
+                boundaries.Contains(transform.Position)
+
+            if inBoundary then asteroid.Entered <- true
 
             let hasExpiry = this.expiryMapper.Has(entityId)
 
-            if dropHitBox && (not hasExpiry) then
+            if ((asteroid.Entered && not inBoundary) || dropHitBox) && (not hasExpiry) then
                 for i in 0 .. 3 do
                     let velocity =
                         new Vector2(
@@ -188,7 +192,8 @@ type AsteroidRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCa
             let asteroid = this.asteroidMapper.Get(entity)
 
             // if transform.Position.Y > asteroid.StartY then
-            spriteBatch.FillRectangle(transform.Position, new Size2(asteroid.Size, asteroid.Size), Color.LightBlue)
+            if asteroid.Entered then
+                spriteBatch.FillRectangle(transform.Position, new Size2(asteroid.Size, asteroid.Size), Color.LightBlue)
 
             ()
 

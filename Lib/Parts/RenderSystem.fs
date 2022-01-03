@@ -12,7 +12,8 @@ open MonoGame.Extended.Sprites
 type SpriteRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
     inherit EntityDrawSystem(Aspect
         .All(typedefof<Sprite>, typedefof<Transform2>)
-        .Exclude(typedefof<Rain.Raindrop>))
+        .Exclude(typedefof<Asteroids.Asteroid>)
+        )
 
     let graphicsDevice = graphicsDevice
     let camera = camera
