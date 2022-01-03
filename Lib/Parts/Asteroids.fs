@@ -12,11 +12,10 @@ type AsteroidExpiry =
     new(timeRemaining: float32) = { TimeRemaining = timeRemaining }
 
 
-type Asteroid(velocity: Vector2, size: float32, startY: float32) =
+type Asteroid(velocity: Vector2, size: float32) =
 
     let mutable velocity = velocity
     let mutable size = size
-    let mutable startY = startY
 
     member this.Velocity
         with get () = velocity
@@ -26,9 +25,6 @@ type Asteroid(velocity: Vector2, size: float32, startY: float32) =
         with get () = size
         and set (value) = size <- value
 
-    member this.StartY
-        with get () = startY
-        and set (value) = startY <- value
 
 type AsteroidExpirySystem() =
     inherit EntityProcessingSystem(Aspect.All(typedefof<AsteroidExpiry>))
@@ -68,19 +64,17 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
     [<DefaultValue>]
     val mutable expiryMapper: ComponentMapper<AsteroidExpiry>
 
-    let mutable bubble = new EllipseF(new Vector2( 0f,0f),0f,0f)
-    
+    let mutable bubble = new EllipseF(Vector2.One,1f,1f)
+
     let MinSpawnDelay = 0.0f
     let MaxSpawnDelay = 0.1f
     let mutable spawnDelay = MaxSpawnDelay
 
     let boundaries = boundaries
 
-    // TODO: make public
     let mutable windStrength = 0f
 
-    member this.Bubble 
-        // with get() = box
+    member this.Bubble
         with set(value) = bubble <- value
 
     member this.WindStrength
@@ -89,7 +83,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
     member this.CreateAsteroid(position: Vector2, velocity: Vector2, size: float32) =
         let entity = this.CreateEntity()
         entity.Attach(new Transform2(position))
-        entity.Attach(new Asteroid(velocity, size, float32 boundaries.Top))
+        entity.Attach(new Asteroid(velocity, size))
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
@@ -105,7 +99,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
             let transform = this.transformMapper.Get(entityId)
             let asteroid = this.asteroidMapper.Get(entityId)
 
-            asteroid.Velocity <- asteroid.Velocity + new Vector2(0f, 30f) * dt
+            // asteroid.Velocity <- asteroid.Velocity + new Vector2(0f, 30f) * dt
 
             transform.Position <-
                 transform.Position
@@ -115,15 +109,13 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
             let dropHitBox =
                 bubble.Contains(transform.Position)
 
-            let inBoundary =
-                true
-                // boundaries.Contains(transform.Position)
+            // let inBoundary =
+            //     true
+            //     boundaries.Contains(transform.Position)
 
             let hasExpiry = this.expiryMapper.Has(entityId)
 
-            if (((not inBoundary)
-                 || dropHitBox)
-                && (not hasExpiry)) then
+            if dropHitBox && (not hasExpiry) then
                 for i in 0 .. 3 do
                     let velocity =
                         new Vector2(
@@ -159,7 +151,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
                     )
 
                 let id =
-                    this.CreateAsteroid(position, Vector2.Zero, random.NextSingle(2f, 4f))
+                    this.CreateAsteroid(position, Vector2.One * 100f, random.NextSingle(2f, 4f))
 
                 ()
 
@@ -195,8 +187,8 @@ type AsteroidRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCa
             let transform = this.transformMapper.Get(entity)
             let asteroid = this.asteroidMapper.Get(entity)
 
-            if transform.Position.Y > asteroid.StartY then
-                spriteBatch.FillRectangle(transform.Position, new Size2(asteroid.Size, asteroid.Size), Color.LightBlue)
+            // if transform.Position.Y > asteroid.StartY then
+            spriteBatch.FillRectangle(transform.Position, new Size2(asteroid.Size, asteroid.Size), Color.LightBlue)
 
             ()
 

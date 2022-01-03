@@ -47,7 +47,7 @@ type Game1() as x =
 
 
     let box = new RectangleF(600f, 200f, 50f,80f)
-    let bubble = new EllipseF(new Vector2(600f, 200f), 50f,80f)
+    let bubble = new EllipseF(new Vector2(600f, 300f), 50f,80f)
 
     let mutable mouseListener = new MouseListener()
 
@@ -99,7 +99,7 @@ type Game1() as x =
         this.rain1.WindStrength <- 60f
         this.rain1.Box <- box
 
-        this.asteroids1 <- new AsteroidShowerSystem(new EllipseF(new Vector2(100f,100f), 600f,300f))
+        this.asteroids1 <- new AsteroidShowerSystem(new EllipseF(new Vector2(400f,400f), 300f,200f))
         this.asteroids1.Bubble <- bubble
         this.asteroids1.WindStrength <- 30f
 
@@ -110,13 +110,13 @@ type Game1() as x =
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, this.camera))
                 .AddSystem(new TransformUpdateSystem())
 
-                // .AddSystem(this.rain1)
-                // .AddSystem(new RainExpirySystem())
-                // .AddSystem(new RainRenderSystem(this.GraphicsDevice, this.camera))
+                .AddSystem(this.rain1)
+                .AddSystem(new RainExpirySystem())
+                .AddSystem(new RainRenderSystem(this.GraphicsDevice, this.camera))
 
-                .AddSystem(this.asteroids1)
-                .AddSystem(new AsteroidExpirySystem())
-                .AddSystem(new AsteroidRenderSystem(this.GraphicsDevice, this.camera))
+                // .AddSystem(this.asteroids1)
+                // .AddSystem(new AsteroidExpirySystem())
+                // .AddSystem(new AsteroidRenderSystem(this.GraphicsDevice, this.camera))
 
                 .Build()
 
@@ -140,12 +140,12 @@ type Game1() as x =
     override this.Draw(gameTime) =
         this.GraphicsDevice.Clear Color.CornflowerBlue
 
-        // spriteBatch.Begin(transformMatrix = this.camera.GetViewMatrix())
+        spriteBatch.Begin(transformMatrix = this.camera.GetViewMatrix())
 
-        // spriteBatch.DrawRectangle(box, Color.AliceBlue)
-        // spriteBatch.DrawEllipse(bubble.Center, new Vector2(bubble.RadiusX, bubble.RadiusY), 10, Color.Azure)
+        spriteBatch.DrawRectangle(box, Color.AliceBlue)
+        spriteBatch.DrawEllipse(bubble.Center, new Vector2(bubble.RadiusX, bubble.RadiusY), 10, Color.Azure)
 
-        // spriteBatch.End()
+        spriteBatch.End()
 
         base.Draw gameTime
         ()

@@ -76,7 +76,6 @@ type RainfallSystem(boundaries: Rectangle) =
 
     let boundaries = boundaries
 
-    // TODO: make public
     let mutable windStrength = 0f
 
     member this.Box 
