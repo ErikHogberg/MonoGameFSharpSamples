@@ -36,20 +36,12 @@ type Game1() as x =
     [<DefaultValue>]
     val mutable asteroids1: AsteroidShowerSystem
 
-    // [<DefaultValue>]
-    // val mutable ship: Texture2D
-
-    // [<DefaultValue>]
-    // val mutable font: SpriteFont
-
 
     let box = new RectangleF(600f, 200f, 50f,80f)
     let bubble = new EllipseF(new Vector2(600f, 300f), 50f,80f)
 
     let mutable mouseListener = new MouseListener()
-
-    // [<DefaultValue>]
-    // val mutable ship1: SpaceShip // = new SpaceShip(ship)
+    let mutable touchListener = new TouchListener()
 
 
     override this.Initialize() =
@@ -65,7 +57,7 @@ type Game1() as x =
         graphics.ApplyChanges()
 
         let listenerComponent =
-            new InputListenerComponent(this, mouseListener)
+            new InputListenerComponent(this, mouseListener, touchListener)
 
         this.Components.Add listenerComponent
 
@@ -83,14 +75,9 @@ type Game1() as x =
 
         // printfn "content root: %s" this.Content.RootDirectory
         this.dot <- this.Content.Load "1px"
-        // this.ship <- this.Content.Load "ship"
-        // this.font <- this.Content.Load "Fira Code"
-
-        // let dot = this.Content.Load "1px"
 
         // Singleton.Instance.Set("dot", this.dot)
 
-        // this.ship1 <- new SpaceShip(this.ship, new Point(100, 100), 150)
 
         this.asteroids1 <- new AsteroidShowerSystem(new EllipseF(new Vector2(400f,400f), 600f,300f))
         this.asteroids1.Bubble <- bubble
@@ -101,7 +88,7 @@ type Game1() as x =
         let world =
             worldBuilder
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, this.camera))
-                // .AddSystem(new TransformUpdateSystem())
+                .AddSystem(new TransformUpdateSystem())
 
                 .AddSystem(this.asteroids1)
                 .AddSystem(new AsteroidExpirySystem())

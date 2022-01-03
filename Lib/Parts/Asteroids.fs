@@ -16,6 +16,9 @@ type Asteroid(velocity: Vector2, size: float32) =
 
     let mutable velocity = velocity
     let mutable size = size
+
+    // whether or not the asteroid has entered the rendering boundary of the asteroid shower system yet
+    // used for triggering the impact effect (and despawing) upon exiting the rendering boundary
     let mutable entered = false
 
     member this.Velocity
@@ -28,7 +31,7 @@ type Asteroid(velocity: Vector2, size: float32) =
 
     member this.Entered
         with get () = entered
-        and set (value) = entered <-value
+        and set (value) = entered <- value
 
 
 type AsteroidExpirySystem() =
@@ -60,6 +63,8 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
 
     let random = new FastRandom()
 
+    // mappers for accessing components
+
     [<DefaultValue>]
     val mutable transformMapper: ComponentMapper<Transform2>
 
@@ -69,15 +74,22 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
     [<DefaultValue>]
     val mutable expiryMapper: ComponentMapper<AsteroidExpiry>
 
+    // asteroid shield/obstruction
     let mutable bubble = new EllipseF(Vector2.One, 1f, 1f)
 
+    // random range for asteroid spawn delay
     let MinSpawnDelay = 0.0f
     let MaxSpawnDelay = 0.1f
     let mutable spawnDelay = MaxSpawnDelay
 
+    // asteroid shower render/despawn boundaries
     let boundaries = boundaries
 
+    // x velocity offset for asteroids
+    // TODO: set direction instead
     let mutable windStrength = 0f
+
+    // accessors
 
     member this.Bubble
         with set (value) = bubble <- value
@@ -85,6 +97,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
     member this.WindStrength
         with set (value) = windStrength <- value
 
+    // method for spawning new asteroid
     member this.CreateAsteroid(position: Vector2, velocity: Vector2, size: float32) =
         let entity = this.CreateEntity()
         entity.Attach(new Transform2(position))
@@ -104,23 +117,31 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
             let transform = this.transformMapper.Get(entityId)
             let asteroid = this.asteroidMapper.Get(entityId)
 
-
+            // move asteroid
             transform.Position <-
                 transform.Position
                 + (asteroid.Velocity + new Vector2(windStrength, 0f))
                   * dt
 
+            // check if asteroid hit the shield
             let dropHitBox = bubble.Contains(transform.Position)
 
-            let inBoundary =
-                boundaries.Contains(transform.Position)
+            // check if asteroid is inside the render boundary
+            let inBoundary = boundaries.Contains(transform.Position)
 
-            if inBoundary then asteroid.Entered <- true
+            // mark asteroid as having entered boundary
+            if inBoundary then
+                asteroid.Entered <- true
 
+            // check if the asteroid is an impact effect asteroid fragment as opposed to a normal asteroid
             let hasExpiry = this.expiryMapper.Has(entityId)
 
-            if ((asteroid.Entered && not inBoundary) || dropHitBox) && (not hasExpiry) then
+            // spawn 3 asteroids (with a set lifetime) upon either hitting the shield or leaving the boundary, also despawns old asteroid
+            if ((asteroid.Entered && not inBoundary) || dropHitBox)
+               && (not hasExpiry) then
+
                 for i in 0 .. 3 do
+                    // set a velocity for the new asteroid fragment to go randomly left or right, and back upwards
                     let velocity =
                         new Vector2(
                             random.NextSingle(-100f, 100f),
@@ -128,7 +149,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
                             * random.NextSingle(0.1f, 0.2f)
                         )
 
-                    // var id = CreateRaindrop(transform.Position.SetY(splashSpawnY), velocity, (i + 1) * 0.5f);
+                    // spawn the asteroid fragment, one pixel above the impact location
                     let id =
                         this.CreateAsteroid(
                             transform.Position.SetY(transform.Position.Y - 1f),
@@ -136,8 +157,10 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
                             (float32 i + 1f) * 0.5f
                         )
 
+                    // add a time expiration of 1 second for the new asteroids, making them despawn by timer instead of collision
                     this.expiryMapper.Put(id, new AsteroidExpiry(1f))
 
+                // destroy the old asteroid
                 this.DestroyEntity(entityId)
 
             ()
@@ -146,7 +169,9 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
 
         // TODO: make frame-indipendent
         if spawnDelay <= 0f then
+            // spawn 50 asteroid on each timer expiration
             for q in 0 .. 50 do
+                // position is randomized along width of boundary
                 let position =
                     new Vector2(
                         random.NextSingle(float32 boundaries.Left, float32 boundaries.Right),
@@ -154,11 +179,13 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
                         + random.NextSingle(-240f, -480f)
                     )
 
+                // TODO: make spawn velocity a public field
                 let id =
                     this.CreateAsteroid(position, Vector2.One * 100f, random.NextSingle(2f, 4f))
 
                 ()
 
+            // spawn delay is randomized on each expiration
             spawnDelay <- random.NextSingle(MinSpawnDelay, MaxSpawnDelay)
 
         ()
@@ -184,6 +211,8 @@ type AsteroidRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCa
 
     override this.Draw(gameTime: GameTime) =
         // let dt = gameTime.GetElapsedSeconds()
+
+        // set the sprite batch view to match the position of the camera
         let transformMatrix = camera.GetViewMatrix()
         spriteBatch.Begin(samplerState = SamplerState.PointClamp, transformMatrix = transformMatrix)
 
@@ -191,7 +220,7 @@ type AsteroidRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCa
             let transform = this.transformMapper.Get(entity)
             let asteroid = this.asteroidMapper.Get(entity)
 
-            // if transform.Position.Y > asteroid.StartY then
+            // only draw asteroids if they have entered the boundary
             if asteroid.Entered then
                 spriteBatch.FillRectangle(transform.Position, new Size2(asteroid.Size, asteroid.Size), Color.LightBlue)
 
