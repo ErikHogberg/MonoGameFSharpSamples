@@ -57,7 +57,7 @@ type AsteroidExpirySystem() =
         ()
 
 // type RainfallSystem(boundaries: Rectangle, minRate: float, maxRate: float, rateIsPerWidth: bool) =
-type AsteroidShowerSystem(boundaries: EllipseF) =
+type AsteroidShowerSystem(boundaries: EllipseF, startVelocity: Vector2) =
     inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<Asteroid>))
 
 
@@ -83,19 +83,22 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
     let mutable spawnDelay = MaxSpawnDelay
 
     // asteroid shower render/despawn boundaries
-    let boundaries = boundaries
+    // let mutable boundaries = boundaries
+    let mutable boundaries = boundaries
 
-    // x velocity offset for asteroids
-    // TODO: set direction instead
-    let mutable windStrength = 0f
+    let mutable startVelocity = startVelocity
+
 
     // accessors
 
     member this.Bubble
         with set (value) = bubble <- value
 
-    member this.WindStrength
-        with set (value) = windStrength <- value
+    member this.StartVelocity
+        with set (value) = startVelocity <- value
+
+    // member this.Boundaries
+        // wiht set (value) = boundaries <- value
 
     // method for spawning new asteroid
     member this.CreateAsteroid(position: Vector2, velocity: Vector2, size: float32) =
@@ -118,10 +121,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
             let asteroid = this.asteroidMapper.Get(entityId)
 
             // move asteroid
-            transform.Position <-
-                transform.Position
-                + (asteroid.Velocity + new Vector2(windStrength, 0f))
-                  * dt
+            transform.Position <- transform.Position + asteroid.Velocity * dt
 
             // check if asteroid hit the shield
             let dropHitBox = bubble.Contains(transform.Position)
@@ -179,9 +179,8 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
                         + random.NextSingle(-240f, -480f)
                     )
 
-                // TODO: make spawn velocity a public field
                 let id =
-                    this.CreateAsteroid(position, Vector2.One * 100f, random.NextSingle(2f, 4f))
+                    this.CreateAsteroid(position, startVelocity, random.NextSingle(2f, 4f))
 
                 ()
 

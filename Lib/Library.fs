@@ -12,6 +12,7 @@ open MonoGame.Extended.Input.InputListeners
 open MonoGame.Extended.Entities
 open MonoGame.Extended.Sprites
 open MonoGame.Extended.ViewportAdapters
+open MonoGame.Extended.Tweening
 
 
 open Ship
@@ -40,6 +41,9 @@ type Game1() as x =
     let box = new RectangleF(600f, 200f, 50f,80f)
     let bubble = new EllipseF(new Vector2(600f, 300f), 50f,80f)
 
+    let tweener = new Tweener()
+    
+
     let mutable mouseListener = new MouseListener()
     let mutable touchListener = new TouchListener()
 
@@ -66,6 +70,11 @@ type Game1() as x =
 
         this.camera <- new OrthographicCamera(viewportAdapter)
 
+        let tween = 
+            tweener.TweenTo(bubble, (fun bubble -> bubble.RadiusX), 100f, 1f, 1f)
+                .RepeatForever(0.5f)
+                .AutoReverse()
+                // .Easing(EasingFunctions.Linear)
 
         base.Initialize()
         ()
@@ -79,9 +88,8 @@ type Game1() as x =
         // Singleton.Instance.Set("dot", this.dot)
 
 
-        this.asteroids1 <- new AsteroidShowerSystem(new EllipseF(new Vector2(400f,400f), 600f,300f))
+        this.asteroids1 <- new AsteroidShowerSystem(new EllipseF(bubble.Center, 400f, 250f), Vector2.UnitY * 100f)
         this.asteroids1.Bubble <- bubble
-        this.asteroids1.WindStrength <- 30f
 
         let worldBuilder = new WorldBuilder()
 
@@ -109,6 +117,10 @@ type Game1() as x =
     override this.Update(gameTime) =
         if Keyboard.GetState().IsKeyDown Keys.Escape then
             this.Exit()
+
+        let dt = gameTime.GetElapsedSeconds()
+
+        tweener.Update(dt)
 
         base.Update gameTime
         ()
