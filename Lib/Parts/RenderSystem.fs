@@ -73,7 +73,7 @@ type EllipseRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCam
             let sprite = this.spriteMapper.Get entityId
             // spriteBatch.Draw(sprite, transform)
             // TODO: apply transform
-            spriteBatch.DrawEllipse(sprite.Center, new Vector2( sprite.RadiusX, sprite.RadiusY),16, Color.Gold)
+            spriteBatch.DrawEllipse(sprite.Center, Vector2( sprite.RadiusX, sprite.RadiusY),16, Color.Gold)
             ()
 
         spriteBatch.End()
