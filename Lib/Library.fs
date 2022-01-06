@@ -17,6 +17,7 @@ open MonoGame.Extended.Tweening
 
 open Ship
 open Asteroids
+open Boids
 open Tools
 open RenderSystem
 open UpdateSystem
@@ -39,9 +40,13 @@ type Game1() as x =
     [<DefaultValue>]
     val mutable asteroidsRenderSystem: AsteroidRenderSystem
 
+    [<DefaultValue>]
+    val mutable boids1: BoidsSystem
 
     let box = RectangleF(600f, 200f, 50f,80f)
     let bubble = EllipseF(Vector2(600f, 400f), 50f,80f)
+
+    let boidsTarget = CircleF(Vector2(1300f, 600f), 0.7f)
 
     let mutable asteroidAngle = 0f
 
@@ -109,6 +114,9 @@ type Game1() as x =
 
         this.asteroidsRenderSystem <- new AsteroidRenderSystem(this.GraphicsDevice, this.camera)
 
+        this.boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center, 300f, 450f))
+        this.boids1.Target <- boidsTarget
+
         let world =
             WorldBuilder()
                 
@@ -118,6 +126,9 @@ type Game1() as x =
                 .AddSystem(this.asteroids1)
                 .AddSystem(new AsteroidExpirySystem())
                 .AddSystem(this.asteroidsRenderSystem)
+
+                .AddSystem(this.boids1)
+                .AddSystem(new BoidsRenderSystem(this.GraphicsDevice, this.camera))
 
                 .Build()
 
@@ -144,6 +155,7 @@ type Game1() as x =
 
         asteroidAngle <- (asteroidAngle + dt * 0.15f) % MathF.Tau
         this.asteroids1.SpawnAngle <- asteroidAngle
+        this.boids1.SpawnAngle <- MathF.Tau - asteroidAngle
 
         base.Update gameTime
         ()
@@ -171,6 +183,8 @@ type Game1() as x =
         spriteBatch.DrawLine(bottomright, bottomleft, Color.Brown)
 
         // spriteBatch.DrawRectangle(rect.Position, rect.Size, Color.Aquamarine)
+
+        spriteBatch.DrawCircle(boidsTarget, 12, Color.Chartreuse)
 
         spriteBatch.End()
 

@@ -10,7 +10,7 @@ open MonoGame.Extended.Sprites
 
 
 type TransformUpdateSystem()=
-    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>).Exclude(typedefof<Asteroids.Asteroid>))
+    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>).Exclude(typedefof<Asteroids.Asteroid>, typedefof<Boids.Boid>))
 
     [<DefaultValue>]
     val mutable transformMapper: ComponentMapper<Transform2>
