@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SpaceStratMGFS", "Desktop\SpaceStratMGFS.fsproj", "{8A85CF95-26D1-4B14-B017-05A6792BDCA6}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MonoGameFSharpSamples", "Desktop\Desktop.fsproj", "{8A85CF95-26D1-4B14-B017-05A6792BDCA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

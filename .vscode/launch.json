@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Desktop/bin/Debug/net6.0/SpaceStratMGFS.dll",
+            "program": "${workspaceFolder}/Desktop/bin/Debug/net6.0/Desktop.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",

@@ -198,7 +198,7 @@ type BoidsRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamer
             let asteroid = this.asteroidMapper.Get(entity)
 
             // only draw asteroids if they have entered the boundary
-            spriteBatch.FillRectangle(transform.Position, Size2(asteroid.Size, asteroid.Size), Color.PaleTurquoise)
+            spriteBatch.FillRectangle(transform.Position, Size2(asteroid.Size, asteroid.Size), Color.Orange)
 
             ()
 
