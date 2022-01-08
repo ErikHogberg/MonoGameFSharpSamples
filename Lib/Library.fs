@@ -12,6 +12,8 @@ open MonoGame.Extended.Input.InputListeners
 open MonoGame.Extended.Entities
 open MonoGame.Extended.Sprites
 open MonoGame.Extended.ViewportAdapters
+open MonoGame.Extended.Screens
+open MonoGame.Extended.Screens.Transitions
 open MonoGame.Extended.Tweening
 
 
@@ -21,6 +23,8 @@ open Boids
 open Tools
 open RenderSystem
 open UpdateSystem
+open Danmaku
+open SpaceTactics
 
 type Game1() as x =
     inherit Game()
@@ -57,6 +61,7 @@ type Game1() as x =
     let mutable touchListener = TouchListener()
     let mutable kbdListener = KeyboardListener()
 
+    let screenManager = new ScreenManager()
 
     override this.Initialize() =
 
@@ -74,6 +79,7 @@ type Game1() as x =
             new InputListenerComponent(this, mouseListener, touchListener, kbdListener)
 
         this.Components.Add listenerComponent
+        this.Components.Add screenManager
 
         kbdListener.KeyPressed.Add(fun args  ->
             if args.Key = Keys.Escape then
@@ -139,6 +145,8 @@ type Game1() as x =
         let mutable dotSprite = Sprite(this.dot)
         dotSprite.Color <- Color.Goldenrod
         testEntity.Attach(dotSprite)
+
+        screenManager.LoadScreen(new DanmakuGame(this), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
 
         ()
 

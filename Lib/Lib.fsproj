@@ -18,6 +18,8 @@
     <Compile Include="Parts/Asteroids.fs" />
     <Compile Include="Parts/RenderSystem.fs" />
     <Compile Include="Parts/UpdateSystem.fs" />
+    <Compile Include="Danmaku/Danmaku.fs" />
+    <Compile Include="SpaceTactics/SpaceTactics.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
 
