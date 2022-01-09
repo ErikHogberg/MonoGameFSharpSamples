@@ -1,4 +1,4 @@
-module Danmaku
+namespace Danmaku
 
 open System
 
@@ -17,14 +17,12 @@ open MonoGame.Extended.Screens.Transitions
 open MonoGame.Extended.Tweening
 
 open RenderSystem
-open UpdateSystem
 open GameScreenWithComponents
 open Asteroids
 open Boids
 
 type DanmakuGame(game: Game) =
     inherit GameScreenWithComponents(game)
-
 
     [<DefaultValue>]
     val mutable dot: Texture2D
@@ -106,7 +104,6 @@ type DanmakuGame(game: Game) =
             WorldBuilder()
                 
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, this.camera))
-                .AddSystem(new TransformUpdateSystem())
 
                 .AddSystem(this.asteroids1)
                 .AddSystem(new AsteroidExpirySystem())
@@ -119,11 +116,11 @@ type DanmakuGame(game: Game) =
 
         this.Components.Add(world)
 
-        let testEntity = world.CreateEntity()
-        testEntity.Attach(Transform2(100f, 300f, 0f, 100f, 100f))
-        let mutable dotSprite = Sprite(this.dot)
-        dotSprite.Color <- Color.Goldenrod
-        testEntity.Attach(dotSprite)
+        // let testEntity = world.CreateEntity()
+        // testEntity.Attach(Transform2(100f, 300f, 0f, 100f, 100f))
+        // let mutable dotSprite = Sprite(this.dot)
+        // dotSprite.Color <- Color.Goldenrod
+        // testEntity.Attach(dotSprite)
 
         base.LoadContent()
         ()

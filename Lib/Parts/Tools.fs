@@ -1,4 +1,6 @@
 module Tools
+open Microsoft.Xna.Framework
+open MonoGame.Extended
 
 module Singleton =
   open Microsoft.Xna.Framework.Graphics
@@ -19,3 +21,34 @@ module Singleton =
 
 
   let Instance = Product()
+
+type TransformCollisionActor(transform: Transform2, radius: float32, onCollision: Collisions.CollisionEventArgs -> unit, data) =
+  let transform = transform
+  let radius = radius
+  let data = data
+
+  member this.Data with get () = data
+
+  interface MonoGame.Extended.Collisions.ICollisionActor with
+    member this.Bounds with get () = CircleF(transform.Position, radius)
+    member this.OnCollision(args) = onCollision(args)
+
+
+type QuadtreeNode(bounds: RectangleF, levelsLeft: int, splitSize: int) =
+  let bounds = bounds
+  let levelsLeft = levelsLeft
+  let splitSize = splitSize
+  let mutable data = List.Empty
+
+  let mutable NW = null
+  let mutable NE = null
+  let mutable SW = null
+  let mutable SE = null
+
+  member this.Nodes with get ()= [|NW, NE, SW, SE|]
+
+type Quadtree (bounds: RectangleF, maxLevels: int, splitSize: int) =
+  let root = new QuadtreeNode(bounds, maxLevels, splitSize)
+
+  
+

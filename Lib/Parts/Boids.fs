@@ -1,10 +1,12 @@
 module Boids
 
 open Microsoft.Xna.Framework
+open Microsoft.Xna.Framework.Graphics
+
 open MonoGame.Extended
 open MonoGame.Extended.Entities
 open MonoGame.Extended.Entities.Systems
-open Microsoft.Xna.Framework.Graphics
+open MonoGame.Extended.Collisions
 
 open type System.MathF
 
@@ -15,6 +17,10 @@ type Boid(velocity: Vector2, size: float32, timeRemaining: float32) =
 
     let mutable velocity = velocity
     let mutable size = size
+
+    let mutable nearby = List.Empty
+
+    member this.Nearby with get()= nearby and set(value ) = nearby <- value
 
     member this.Velocity
         with get () = velocity
@@ -38,6 +44,10 @@ type BoidsSystem(boundaries: EllipseF) =
 
     let random = new FastRandom()
 
+    let collisionComponent = new CollisionComponent(new RectangleF(0f,0f, 500f, 500f))
+
+
+
     // mappers for accessing components
 
     [<DefaultValue>]
@@ -49,7 +59,7 @@ type BoidsSystem(boundaries: EllipseF) =
     // gravity target of boids, force magnitude corresponds to radius
     let mutable target = CircleF(Vector2.One, 1f)
 
-    // random range for asteroid spawn delay
+    // random range for boid spawn delay
     let MinSpawnDelay = 0.0f
     let MaxSpawnDelay = 0.1f
     let mutable spawnDelay = MaxSpawnDelay
@@ -101,10 +111,17 @@ type BoidsSystem(boundaries: EllipseF) =
         RectangleF(spawnOffsetRange, (spawnOffsetRange * 2f).ToSize())
 
 
-    member this.CreateAsteroid(position: Vector2, velocity: Vector2, size: float32) =
+    member this.CreateBoid(position: Vector2, velocity: Vector2, size: float32) =
         let entity = this.CreateEntity()
-        entity.Attach(Transform2(position))
-        entity.Attach(Boid(velocity, size, random.NextSingle(2f, 15f)))
+        let transform = Transform2(position)
+        let boid = Boid(velocity, size, random.NextSingle(2f, 15f))
+        entity.Attach(transform)
+        entity.Attach(boid)
+        let onCollision (args: CollisionEventArgs) = 
+            let otherBoid = (args.Other :?> Tools.TransformCollisionActor).Data
+            boid.Nearby <- otherBoid :: boid.Nearby 
+            ()
+        collisionComponent.Insert(Tools.TransformCollisionActor(transform, 100f, onCollision, boid))
         spawnCount <- spawnCount + 1
         entity.Id
 
@@ -116,25 +133,35 @@ type BoidsSystem(boundaries: EllipseF) =
     override this.Update(gameTime: GameTime) =
         let dt = gameTime.GetElapsedSeconds()
 
+        collisionComponent.Update gameTime
+
         for entityId in this.ActiveEntities do
             let transform = this.transformMapper.Get(entityId)
-            let asteroid = this.boidMapper.Get(entityId)
+            let boid = this.boidMapper.Get(entityId)
 
-            asteroid.Velocity <- asteroid.Velocity + Vector2.Normalize(target.Position - transform.Position) * target.Radius
+            for otherBoid in boid.Nearby do
+                // TODO: separation
+                // TODO: alignment
+                // TODO: cohesion
+                ()
 
-            if asteroid.Velocity.LengthSquared() > velocityCap ** 2f then
-                asteroid.Velocity <- asteroid.Velocity.NormalizedCopy() * velocityCap
+            boid.Velocity <- boid.Velocity + Vector2.Normalize(target.Position - transform.Position) * target.Radius
 
-            // move asteroid
-            transform.Position <- transform.Position + asteroid.Velocity * dt
+            if boid.Velocity.LengthSquared() > velocityCap ** 2f then
+                boid.Velocity <- boid.Velocity.NormalizedCopy() * velocityCap
 
-            asteroid.TimeRemaining <-
-                asteroid.TimeRemaining
+            // move boid
+            transform.Position <- transform.Position + boid.Velocity * dt
+
+            boid.TimeRemaining <-
+                boid.TimeRemaining
                 - gameTime.GetElapsedSeconds()
 
-            if asteroid.TimeRemaining <= 0f then
+            if boid.TimeRemaining <= 0f then
                 this.DestroyEntity(entityId)
                 spawnCount <- spawnCount - 1
+
+            boid.Nearby <- []
 
             ()
 
@@ -147,18 +174,18 @@ type BoidsSystem(boundaries: EllipseF) =
             let spawnVelocity = this.SpawnVelocity(random.NextSingle(MathHelper.Tau), random.NextSingle(-50f, 10f) + spawnSpeed)
             let pointOnBoundary = this.PointOnBoundary
 
-            // spawn 50 asteroid on each timer expiration
+            // spawn 50 boids on each timer expiration
             for q in 0 .. System.Math.Min(50, maxBoids - spawnCount)  do
                 // position is randomized along width of boundary
 
                 let position =
-                    // randomize displacement of each asteroid along width of boundary
+                    // randomize displacement of each boid along width of boundary
                     // IDEA: adjust spawn rate depending on current spawn random width compared to min and max width
                     this.RandomSpawnPos
                     + pointOnBoundary
 
                 let id =
-                    this.CreateAsteroid(position, spawnVelocity, random.NextSingle(2f, 4f))
+                    this.CreateBoid(position, spawnVelocity, random.NextSingle(2f, 4f))
 
                 ()
 
@@ -178,12 +205,12 @@ type BoidsRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamer
     val mutable transformMapper: ComponentMapper<Transform2>
 
     [<DefaultValue>]
-    val mutable asteroidMapper: ComponentMapper<Boid>
+    val mutable boidMapper: ComponentMapper<Boid>
 
 
     override this.Initialize(mapperService: IComponentMapperService) =
         this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.asteroidMapper <- mapperService.GetMapper<Boid>()
+        this.boidMapper <- mapperService.GetMapper<Boid>()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -195,10 +222,10 @@ type BoidsRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamer
 
         for entity in this.ActiveEntities do
             let transform = this.transformMapper.Get(entity)
-            let asteroid = this.asteroidMapper.Get(entity)
+            let boid = this.boidMapper.Get(entity)
 
-            // only draw asteroids if they have entered the boundary
-            spriteBatch.FillRectangle(transform.Position, Size2(asteroid.Size, asteroid.Size), Color.Orange)
+            // only draw boids if they have entered the boundary
+            spriteBatch.FillRectangle(transform.Position, Size2(boid.Size, boid.Size), Color.Orange)
 
             ()
 
