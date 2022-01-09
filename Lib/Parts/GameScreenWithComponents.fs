@@ -19,6 +19,7 @@ type GameScreenWithComponents (game: Game) =
     let mutable updateables = List<IUpdateable>.Empty
     let mutable components= new GameComponentCollection()
 
+    // TODO: check if working
     let rec remove (element : 'a, list: List<'a>, acc: list<'a>) =
         if list.Head = element then
             list.Tail @ acc
@@ -73,6 +74,9 @@ type GameScreenWithComponents (game: Game) =
         | :? IUpdateable as a -> 
             // updateables <-  (component1 :?> IUpdateable) :: updateables
             updateables <-  a :: updateables
+        | _ -> ()
+
+        match component1 with
         | :? IDrawable as b ->
             drawables <-  b :: drawables
         | _ -> ()
@@ -81,8 +85,10 @@ type GameScreenWithComponents (game: Game) =
     member this.DecategorizeComponent(component1: IGameComponent )=
         match component1 with
         | :? IUpdateable as a -> 
-            // updateables <-  (component1 :?> IUpdateable) :: updateables
             updateables <-  remove( a, updateables)
+        | _ -> ()
+
+        match component1 with
         | :? IDrawable as b ->
             drawables <-  remove(b, drawables)
         | _ -> ()

@@ -127,6 +127,29 @@ type DanmakuGame(game: Game) =
 
     override this.Draw(gameTime) =
 
+        spriteBatch.Begin(transformMatrix = this.camera.GetViewMatrix())
+
+        spriteBatch.DrawEllipse(bubble.Center, Vector2(bubble.RadiusX, bubble.RadiusY), 32, Color.Azure)
+
+        let pointOnBoundary = this.asteroids1.PointOnBoundary
+        
+        spriteBatch.DrawCircle(pointOnBoundary, 5f, 12, Color.Black)
+        let rect = this.asteroids1.SpawnRange()
+        let topleft =(Vector2(rect.TopLeft.X, rect.TopLeft.Y)).Rotate(this.asteroids1.SpawnAngle) + pointOnBoundary
+        let topright=(Vector2(rect.TopRight.X, rect.TopRight.Y)).Rotate(this.asteroids1.SpawnAngle)  + pointOnBoundary
+        let bottomleft =(Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(this.asteroids1.SpawnAngle) + pointOnBoundary
+        let bottomright =(Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(this.asteroids1.SpawnAngle) + pointOnBoundary
+
+        spriteBatch.DrawLine(topleft, topright, Color.Brown)
+        spriteBatch.DrawLine(topleft, bottomleft, Color.Brown)
+        spriteBatch.DrawLine(bottomright, topright, Color.Brown)
+        spriteBatch.DrawLine(bottomright, bottomleft, Color.Brown)
+
+
+        spriteBatch.DrawCircle(boidsTarget, 12, Color.Chartreuse)
+
+        spriteBatch.End()
+
         base.Draw gameTime
         ()
 
