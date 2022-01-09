@@ -19,9 +19,18 @@ type GameScreenWithComponents (game: Game) =
     let mutable updateables = List<IUpdateable>.Empty
     let mutable components= new GameComponentCollection()
 
+    let rec remove (element : 'a, list: List<'a>, acc: list<'a>) =
+        if list.Head = element then
+            list.Tail @ acc
+        else
+            remove (element, list.Tail, list.Head :: acc)
+
+    let remove (element : 'a, list: List<'a>) = remove (element, list, [])
+
     member this.Game with get () = game
     member this.Content with get () = game.Content
     member this.GraphicsDevice with get () = game.GraphicsDevice
+    member this.Window with get () = game.Window
     member this.Services with get () = game.Services
 
     member this.Components with get () = components
@@ -47,8 +56,10 @@ type GameScreenWithComponents (game: Game) =
 
     member this.CategorizeComponents() =
         this.DecategorizeComponents()
-        for i in 0.. components.Count do
-            this.CategorizeComponent(components[i]);
+        // for i in 0.. components.Count do
+        //     this.CategorizeComponent(components[i]);
+        for component1 in components do
+            this.CategorizeComponent(component1);
         
         
 
@@ -56,29 +67,48 @@ type GameScreenWithComponents (game: Game) =
         updateables <- []
         drawables <- []
 
+
     member this.CategorizeComponent (component1: IGameComponent ) =
-        // match component1 with
-        // | IUpdateable a -> 
-        //     updateables <-  (component1 :?> IUpdateable) :: updateables
-        // | IDrawable b ->
-        //     updateables <-  (component1 :?> IUpdateable) :: updateables
+        match component1 with
+        | :? IUpdateable as a -> 
+            // updateables <-  (component1 :?> IUpdateable) :: updateables
+            updateables <-  a :: updateables
+        | :? IDrawable as b ->
+            drawables <-  b :: drawables
+        | _ -> ()
     
-        // if (component1 is IUpdateable) then
-        //     updateables <-  (component1 :?> IUpdateable) :: updateables
-        // if (component1 is IDrawable) then
-        //     _drawables.Add((IDrawable)component);
-        ()
-
+        
     member this.DecategorizeComponent(component1: IGameComponent )=
-        // if (component is IUpdateable)
-        //     _updateables.Remove((IUpdateable)component);
-        // if (component is IDrawable)
-        //     _drawables.Remove((IDrawable)component);
-        ()
-
+        match component1 with
+        | :? IUpdateable as a -> 
+            // updateables <-  (component1 :?> IUpdateable) :: updateables
+            updateables <-  remove( a, updateables)
+        | :? IDrawable as b ->
+            drawables <-  remove(b, drawables)
+        | _ -> ()
+    
     override this.Initialize() =
-        for i in 0 .. components.Count do
-            components[i].Initialize();
+        // for i in 0 .. components.Count do
+        //    components[i].Initialize();
+        for component1 in components do
+            component1.Initialize();
+
+        this.CategorizeComponents()
+
+        components.ComponentAdded.Add(
+            // fun (sender: Object, e: GameComponentCollectionEventArgs) ->
+            fun (e: GameComponentCollectionEventArgs) ->
+                e.GameComponent.Initialize()
+                this.CategorizeComponent(e.GameComponent)
+                ()
+        )
+        
+        components.ComponentRemoved.Add(
+            // fun (sender: Object, e: GameComponentCollectionEventArgs) ->
+            fun (e: GameComponentCollectionEventArgs) ->
+                this.DecategorizeComponent(e.GameComponent)
+                ()
+        )
         
         ()
 
@@ -95,13 +125,13 @@ type GameScreenWithComponents (game: Game) =
     override this.Update(gameTime: GameTime) =
         for updateable in updateables do
             updateable.Update(gameTime)
-        // base.Update(gameTime)
         ()
 
     override this.Draw(gameTime: GameTime) =
         for drawable in drawables do
             drawable.Draw(gameTime)
         ()
+
         
 
     

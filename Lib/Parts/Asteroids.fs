@@ -181,7 +181,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
                 for i in 0 .. 3 do
                     // set a velocity for the new asteroid fragment to go randomly left or right, and back upwards
                     // TODO: rotate fragment velocity with impact direction
-                    let impactAngle = System.MathF.Atan2(asteroid.Velocity.Y, asteroid.Velocity.X)
+                    let impactAngle = System.MathF.Atan2(asteroid.Velocity.Y, asteroid.Velocity.X) - MathHelper.PiOver2
                     let velocity =
                         Vector2(
                             random.NextSingle(-100f, 100f),

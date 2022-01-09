@@ -4,7 +4,7 @@ A small winter holiday hobby project to learn F#.
 
 ## Current state
 
-Has a setup of 3 projects: a desktop project, an untested C# android project (which I will try to replace with a F# project later), and a shared lib with the actual game code.
+It currently has a setup of 3 projects: a desktop project, an untested C# android project (which I will try to replace with a F# project later), and a shared lib with the actual game code.
 
 The recommended starting point for reading the game code is the shared library (./Lib/Library.fs).
 
@@ -17,7 +17,13 @@ The aim is to eventually create a few simplified game clones, such the spaceship
 
 Install [dotnet 6](https://dotnet.microsoft.com/en-us/download/dotnet/6.0).
 
-Run ``` dotnet run ``` in terminal.
+From a terminal:
+
+Install the Monogame Content Builder using ``` dotnet tool install -g dotnet-mgcb ``` and then run ``` mgcb Content.mgcb ``` from the ./Lib/Content/ directory.
+
+Run ``` dotnet run ``` with the Desktop folder as the working directory.
+
+Tested on Windows and Linux.
 
 ## How to dev
 
