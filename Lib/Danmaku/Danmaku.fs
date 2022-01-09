@@ -50,6 +50,11 @@ type DanmakuGame(game: Game) =
     let mutable asteroidAngle = 0f
 
     let tweener = new Tweener()
+
+    let mutable mouseListener = MouseListener()
+    let mutable touchListener = TouchListener()
+    let mutable kbdListener = KeyboardListener()
+
     
     override this.Initialize() =
         
@@ -68,6 +73,17 @@ type DanmakuGame(game: Game) =
                 .RepeatForever(0.5f)
                 .AutoReverse()
                 .Easing(easingFn)
+
+        let listenerComponent =
+            new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
+
+        this.Components.Add listenerComponent
+
+        kbdListener.KeyPressed.Add(fun args  ->
+            if args.Key = Keys.Space then
+                this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
+                ()
+            ())
 
         base.Initialize()
         ()
@@ -126,6 +142,7 @@ type DanmakuGame(game: Game) =
         ()
 
     override this.Draw(gameTime) =
+        this.GraphicsDevice.Clear Color.PaleVioletRed
 
         spriteBatch.Begin(transformMatrix = this.camera.GetViewMatrix())
 

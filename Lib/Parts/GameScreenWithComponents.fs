@@ -119,9 +119,8 @@ type GameScreenWithComponents (game: Game) =
         ()
 
     override this.Dispose() =
-        for i in 0 .. this.Components.Count do
-        
-            let disposable = this.Components[i] :?> IDisposable
+        for component1 in components do
+            let disposable = component1 :?> IDisposable
             if disposable <> null then
                 disposable.Dispose();
         
