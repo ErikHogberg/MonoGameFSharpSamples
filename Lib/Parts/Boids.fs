@@ -18,9 +18,13 @@ type Boid(velocity: Vector2, size: float32, timeRemaining: float32) =
     let mutable velocity = velocity
     let mutable size = size
 
-    let mutable nearby = List.Empty
+    let mutable nearby: List<Tools.TransformCollisionActor> = List.Empty
 
-    member this.Nearby with get()= nearby and set(value ) = nearby <- value
+    member this.Nearby with get () = nearby and set(value ) = nearby <- value
+    member this.EmptyNearby () =  
+        let oldNearby = nearby
+        nearby <- []
+        oldNearby
 
     member this.Velocity
         with get () = velocity
@@ -37,15 +41,20 @@ type Boid(velocity: Vector2, size: float32, timeRemaining: float32) =
 
 
 // type RainfallSystem(boundaries: Rectangle, minRate: float, maxRate: float, rateIsPerWidth: bool) =
-type BoidsSystem(boundaries: EllipseF) =
+type BoidsSystem (boundaries: EllipseF) =
     inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<Boid>))
 
     // IDEA: use tweening lib to define gravity target pull force drop off over distance
 
+    // IDEA: re-add wind
+
+    let targetDistance = 10f
+    let steerSpeed = 1f
+    let visualRange = 200f
+
     let random = new FastRandom()
 
     let collisionComponent = new CollisionComponent(new RectangleF(0f,0f, 500f, 500f))
-
 
 
     // mappers for accessing components
@@ -91,7 +100,7 @@ type BoidsSystem(boundaries: EllipseF) =
         with set (value) = spawnSpeed <- value
 
 
-    member this.SpawnVelocity(angle: float32, speed: float32) = Vector2.UnitY.Rotate(angle) * speed
+    member this.SpawnVelocity (angle: float32, speed: float32) = Vector2.UnitY.Rotate(angle) * speed
     member this.SpawnVelocity() = this.SpawnVelocity(spawnAngle, spawnSpeed)
 
     member this.PointOnBoundary
@@ -111,17 +120,17 @@ type BoidsSystem(boundaries: EllipseF) =
         RectangleF(spawnOffsetRange, (spawnOffsetRange * 2f).ToSize())
 
 
-    member this.CreateBoid(position: Vector2, velocity: Vector2, size: float32) =
+    member this.CreateBoid (position: Vector2) velocity size =
         let entity = this.CreateEntity()
         let transform = Transform2(position)
         let boid = Boid(velocity, size, random.NextSingle(2f, 15f))
         entity.Attach(transform)
         entity.Attach(boid)
         let onCollision (args: CollisionEventArgs) = 
-            let otherBoid = (args.Other :?> Tools.TransformCollisionActor).Data
+            let otherBoid = (args.Other :?> Tools.TransformCollisionActor)
             boid.Nearby <- otherBoid :: boid.Nearby 
             ()
-        collisionComponent.Insert(Tools.TransformCollisionActor(transform, 100f, onCollision, boid))
+        collisionComponent.Insert(Tools.TransformCollisionActor(transform, visualRange, onCollision, boid))
         spawnCount <- spawnCount + 1
         entity.Id
 
@@ -139,10 +148,38 @@ type BoidsSystem(boundaries: EllipseF) =
             let transform = this.transformMapper.Get(entityId)
             let boid = this.boidMapper.Get(entityId)
 
-            for otherBoid in boid.Nearby do
-                // TODO: separation
-                // TODO: alignment
-                // TODO: cohesion
+            let nearby = boid.EmptyNearby()
+
+            if not nearby.IsEmpty then
+
+                let mutable closestNearby = nearby.Head
+
+                for otherBoid in nearby.Tail do
+
+                    let delta = closestNearby.Transform.Position - transform.Position
+                    let distanceSqr = delta.LengthSquared()
+
+                    let otherDelta = closestNearby.Transform.Position - otherBoid.Transform.Position
+                    let otherDistanceSqr = otherDelta.LengthSquared()
+
+                    if distanceSqr > otherDistanceSqr then
+                        closestNearby <- otherBoid
+                        ()
+
+                    ()
+                
+                // cohesion
+
+                // TODO: steer towards closest nearby boid
+
+                // separation
+
+                // TODO: steer away from closest nearby boid when too close
+                
+                // alignment
+                
+                // TODO: 
+                    
                 ()
 
             boid.Velocity <- boid.Velocity + Vector2.Normalize(target.Position - transform.Position) * target.Radius
@@ -161,7 +198,7 @@ type BoidsSystem(boundaries: EllipseF) =
                 this.DestroyEntity(entityId)
                 spawnCount <- spawnCount - 1
 
-            boid.Nearby <- []
+            // boid.Nearby <- []
 
             ()
 
@@ -185,7 +222,7 @@ type BoidsSystem(boundaries: EllipseF) =
                     + pointOnBoundary
 
                 let id =
-                    this.CreateBoid(position, spawnVelocity, random.NextSingle(2f, 4f))
+                    this.CreateBoid position spawnVelocity (random.NextSingle(2f, 4f))
 
                 ()
 

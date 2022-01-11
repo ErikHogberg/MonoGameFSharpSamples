@@ -28,8 +28,9 @@ type TransformCollisionActor(transform: Transform2, radius: float32, onCollision
   let data = data
 
   member this.Data with get () = data
+  member this.Transform with get () = transform
 
-  interface MonoGame.Extended.Collisions.ICollisionActor with
+  interface Collisions.ICollisionActor with
     member this.Bounds with get () = CircleF(transform.Position, radius)
     member this.OnCollision(args) = onCollision(args)
 
