@@ -8,6 +8,8 @@ open MonoGame.Extended.Entities
 open MonoGame.Extended.Entities.Systems
 open MonoGame.Extended.Collisions
 
+open Tools
+
 open type System.MathF
 
 
@@ -18,13 +20,13 @@ type Boid(velocity: Vector2, size: float32, timeRemaining: float32) =
     let mutable velocity = velocity
     let mutable size = size
 
-    let mutable nearby: List<Tools.TransformCollisionActor> = List.Empty
+    // let mutable nearby: List<Tools.TransformCollisionActor> = List.Empty
 
-    member this.Nearby with get () = nearby and set(value ) = nearby <- value
-    member this.EmptyNearby () =  
-        let oldNearby = nearby
-        nearby <- []
-        oldNearby
+    // member this.Nearby with get () = nearby and set(value ) = nearby <- value
+    // member this.EmptyNearby () =  
+    //     let oldNearby = nearby
+    //     nearby <- []
+    //     oldNearby
 
     member this.Velocity
         with get () = velocity
@@ -50,12 +52,13 @@ type BoidsSystem (boundaries: EllipseF) =
 
     let targetDistance = 10f
     let steerSpeed = 1f
-    let visualRange = 200f
+    let visualRange = 20f
+    let visualSize = 1f
+
+    let collisionTreeBounds = RectangleF (0f,0f, 1500f, 1500f)
+    let mutable collisionTree = Quadtree collisionTreeBounds
 
     let random = new FastRandom()
-
-    let collisionComponent = new CollisionComponent(new RectangleF(0f,0f, 500f, 500f))
-
 
     // mappers for accessing components
 
@@ -85,7 +88,7 @@ type BoidsSystem (boundaries: EllipseF) =
     let spawnOffsetRange = Vector2(MathHelper.Max(boundaries.RadiusX, boundaries.RadiusY), 50f)
 
     let mutable spawnCount = 0
-    let maxBoids = 10000
+    let maxBoids = 1000
 
 
     // accessors
@@ -126,11 +129,6 @@ type BoidsSystem (boundaries: EllipseF) =
         let boid = Boid(velocity, size, random.NextSingle(2f, 15f))
         entity.Attach(transform)
         entity.Attach(boid)
-        let onCollision (args: CollisionEventArgs) = 
-            let otherBoid = (args.Other :?> Tools.TransformCollisionActor)
-            boid.Nearby <- otherBoid :: boid.Nearby 
-            ()
-        collisionComponent.Insert(Tools.TransformCollisionActor(transform, visualRange, onCollision, boid))
         spawnCount <- spawnCount + 1
         entity.Id
 
@@ -142,24 +140,25 @@ type BoidsSystem (boundaries: EllipseF) =
     override this.Update(gameTime: GameTime) =
         let dt = gameTime.GetElapsedSeconds()
 
-        collisionComponent.Update gameTime
-
+        let nextCollisionTree = Quadtree collisionTreeBounds
+        
         for entityId in this.ActiveEntities do
             let transform = this.transformMapper.Get(entityId)
             let boid = this.boidMapper.Get(entityId)
 
-            let nearby = boid.EmptyNearby()
+            let nearby = collisionTree.Query(CircleF(transform.Position, visualRange))
 
-            if not nearby.IsEmpty then
+            if nearby.Count > 0 then
 
-                let mutable closestNearby = nearby.Head
+                let mutable closestNearby = nearby[0]
 
-                for otherBoid in nearby.Tail do
+                for i in 1..(nearby.Count-1) do
+                    let otherBoid = nearby[i]
 
-                    let delta = closestNearby.Transform.Position - transform.Position
+                    let delta = closestNearby.Bounds.Position.ToVector() - transform.Position
                     let distanceSqr = delta.LengthSquared()
 
-                    let otherDelta = closestNearby.Transform.Position - otherBoid.Transform.Position
+                    let otherDelta = otherBoid.Bounds.Position.ToVector() - transform.Position
                     let otherDistanceSqr = otherDelta.LengthSquared()
 
                     if distanceSqr > otherDistanceSqr then
@@ -197,10 +196,16 @@ type BoidsSystem (boundaries: EllipseF) =
             if boid.TimeRemaining <= 0f then
                 this.DestroyEntity(entityId)
                 spawnCount <- spawnCount - 1
+            else
+                nextCollisionTree.Insert (QuadtreeData(Tools.TransformCollisionActor(transform, visualSize, (fun _ -> ()), boid)))
+                ()
 
             // boid.Nearby <- []
 
             ()
+
+        nextCollisionTree.Shake()
+        collisionTree <- nextCollisionTree
 
         spawnDelay <- spawnDelay - dt
 
