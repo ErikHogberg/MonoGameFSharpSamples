@@ -43,7 +43,7 @@ type DanmakuGame(game: Game) =
     let box = RectangleF(600f, 200f, 50f,80f)
     let bubble = EllipseF(Vector2(600f, 400f), 50f,80f)
 
-    let boidsTarget = CircleF(Vector2(1300f, 600f), 0.7f)
+    let boidsTarget = CircleF(Vector2(1300f, 600f), 0.2f)
 
     let mutable asteroidAngle = 0f
 

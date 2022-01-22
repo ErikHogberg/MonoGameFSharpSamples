@@ -53,8 +53,12 @@ type Game1() as x =
 
         this.Window.AllowUserResizing <- true
 
-        graphics.PreferredBackBufferWidth <- 1920//1280
-        graphics.PreferredBackBufferHeight <- 1080//720
+        graphics.PreferredBackBufferWidth <- 
+            // 1920
+            1280
+        graphics.PreferredBackBufferHeight <- 
+            // 1080
+            720
         graphics.PreferMultiSampling <- false
         graphics.ApplyChanges()
 

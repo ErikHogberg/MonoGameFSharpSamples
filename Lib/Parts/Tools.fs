@@ -1,5 +1,6 @@
 module Tools
 
+open System
 open Microsoft.Xna.Framework
 open MonoGame.Extended
 
@@ -23,8 +24,12 @@ type Point2 with
 
 type Vector2 with
     member this.MoveTowards (target: Vector2) (maxDistance: float32) =
-        (this
-         + (target - this).NormalizedCopy() * maxDistance)        
+        if maxDistance > 0f && (maxDistance **2f)* maxDistance > (target - this).NormalizedCopy().LengthSquared() then
+            target
+        else
+            // FIXME: breaks with negative maxDistance
+            let deltaDir =  (target - this)
+            (this + (deltaDir.NormalizedCopy() * maxDistance))
     member this.RotateTowards (target: Vector2) (maxDistance: float32) =
         (this.MoveTowards target maxDistance).NormalizedCopy()
 
