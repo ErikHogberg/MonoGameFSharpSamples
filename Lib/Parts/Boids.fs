@@ -93,15 +93,15 @@ type BoidsSystem (boundaries: EllipseF) =
 
     // boid flocking settings
     let separationSteerSpeed = 30f
-    let cohesionSteerSpeed = 10f
-    let alignmentSpeed = 10f
+    let cohesionSteerSpeed = 30f
+    let alignmentSpeed = 30f
 
     // multiplier on gravity target radius
     let targetSteerMul = 2f
 
     // define target flocking distance range
-    let maxDistanceSqr = 20f
-    let minDistanceSqr = 15f
+    let maxDistanceSqr = 30f
+    let minDistanceSqr = 25f
 
     // accessors
 
@@ -198,7 +198,7 @@ type BoidsSystem (boundaries: EllipseF) =
                         // alignment                
                         let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
                         // TODO: match direction and speed of closest boid
-                        boid.Velocity <- boid.Velocity.MoveTowards otherBoid.Velocity (alignmentSpeed*dt)
+                        boid.Velocity <- boid.Velocity.MoveTowards(otherBoid.Velocity, (alignmentSpeed*dt))
 
                         ()
                     ()

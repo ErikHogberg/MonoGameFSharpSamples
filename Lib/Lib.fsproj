@@ -22,6 +22,7 @@
     <Compile Include="Danmaku/Danmaku.fs"/>
     <Compile Include="Danmaku/DanmakuPlayer.fs"/>
     <Compile Include="SpaceTactics/SpaceTactics.fs"/>
+    <Compile Include="DebugScene.fs"/>
     <Compile Include="Library.fs"/>
   </ItemGroup>
 </Project>

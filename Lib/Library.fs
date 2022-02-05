@@ -25,6 +25,7 @@ open RenderSystem
 open UpdateSystem
 open Danmaku
 open SpaceTactics
+open DebugScene
 
 type Game1() as x =
     inherit Game()
@@ -78,7 +79,9 @@ type Game1() as x =
             else if args.Key = Keys.D1 then
                 screenManager.LoadScreen(new DanmakuGame(this), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
             else if args.Key = Keys.D2 then
-                screenManager.LoadScreen(new SpaceGame(this), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
+                screenManager.LoadScreen(new SpaceGame(this), new FadeTransition(this.GraphicsDevice, Color.Red, 1f))
+            else if args.Key = Keys.D3 then
+                screenManager.LoadScreen(new DebugScene(this), new FadeTransition(this.GraphicsDevice, Color.Green, 1f))
             
             ())
 
