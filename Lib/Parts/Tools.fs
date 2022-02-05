@@ -23,15 +23,18 @@ type Point2 with
     member this.ToVector() = Vector2(this.X, this.Y)
 
 type Vector2 with
-    member this.MoveTowards (target: Vector2) (maxDistance: float32) =
-        if maxDistance > 0f && (maxDistance **2f)* maxDistance > (target - this).NormalizedCopy().LengthSquared() then
+    member this.MoveTowards (target: Vector2) maxDistance =
+        if maxDistance > 0f && (maxDistance **2f) > (target - this).LengthSquared() then
             target
         else
             // FIXME: breaks with negative maxDistance
-            let deltaDir =  (target - this)
-            (this + (deltaDir.NormalizedCopy() * maxDistance))
-    member this.RotateTowards (target: Vector2) (maxDistance: float32) =
-        (this.MoveTowards target maxDistance).NormalizedCopy()
+            let deltaDir = target - this
+            (this + (Vector2.Normalize( deltaDir) * maxDistance))
+    
+    member this.RotateTowards (target: Vector2) maxDistance =
+        // let targetRot = Quaternion.Identity;
+        
+        Vector2.Normalize(this.MoveTowards target maxDistance)
 
 
 type TransformCollisionActor

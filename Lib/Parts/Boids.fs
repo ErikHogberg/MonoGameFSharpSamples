@@ -182,7 +182,7 @@ type BoidsSystem (boundaries: EllipseF) =
                         // TODO: steer away from closest nearby boid when too close
                         let velocityMagnitude = boid.Velocity.Length()
                         let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
-                        let dir = boid.Velocity.NormalizedCopy().RotateTowards (-otherBoid.Velocity.NormalizedCopy()) (separationSteerSpeed *dt)
+                        let dir = boid.Velocity.NormalizedCopy().RotateTowards (otherBoid.Velocity.NormalizedCopy()) (-separationSteerSpeed *dt)
                         boid.Velocity <- dir*velocityMagnitude
                         ()
                     else
