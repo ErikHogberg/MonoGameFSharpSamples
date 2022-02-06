@@ -75,7 +75,7 @@ type BoidsSystem (boundaries: EllipseF) =
     let mutable spawnDelay = MaxSpawnDelay
 
     // max velocity of entities
-    let velocityCap = 200f
+    let velocityCap = 100f
 
     // ellipse boundary only used for path of spawner box
     let mutable boundaries = boundaries
@@ -92,9 +92,9 @@ type BoidsSystem (boundaries: EllipseF) =
     let maxBoids = 1000
 
     // boid flocking settings
-    let separationSteerSpeed = 30f
-    let cohesionSteerSpeed = 30f
-    let alignmentSpeed = 30f
+    let separationSteerSpeed = 2f
+    let cohesionSteerSpeed = 2f
+    let alignmentSpeed = 2f
 
     // multiplier on gravity target radius
     let targetSteerMul = 2f

@@ -36,6 +36,13 @@ type DebugScene(game: Game) =
     let mutable v1= Vector2(500f,400f)
     let mutable v2= Vector2(600f,400f)
     let mutable v3= Vector2(550f,450f)
+
+    let mutable iSqrt1 = 0f;
+    let mutable iSqrt2 = 0f;
+    let mutable sqrtVal = 1f;
+
+    let mutable cross = 1f;
+    let mutable dot = 1f;
     
     
     override this.Initialize() =
@@ -66,6 +73,17 @@ type DebugScene(game: Game) =
                 ()
             if args.Key = Keys.D then
                 v2 <- v3 + (v2-v3).RotateTowards (v1-v3) -10f
+                ()
+            if args.Key = Keys.X then
+                iSqrt1 <- 1f/MathF.Sqrt(sqrtVal)
+                iSqrt2 <- Tools.InverseSqrt(sqrtVal)
+                sqrtVal <- sqrtVal + 1f
+                dot <- Vector2.Dot((v1-v3).Rotate90Clockwise().FastNormalizedCopy(), (v2-v3).FastNormalizedCopy())
+                ()
+            if args.Key = Keys.Left then
+                v2 <- v2 - Vector2.UnitX*10f
+            if args.Key = Keys.Right then
+                v2 <- v2 + Vector2.UnitX*10f
                 ()
             ())
 
@@ -98,8 +116,14 @@ type DebugScene(game: Game) =
         spriteBatch.DrawCircle(v3, 15f, 8, Color.Green, 5f)
         spriteBatch.DrawCircle(v2, 15f, 8, Color.Blue, 5f)
 
+        let v2Delta = v2-v3
+        spriteBatch.DrawString(this.firaCode, $"v2: {v2Delta}", Vector2(100f, 100f), Color.Black);
+        spriteBatch.DrawString(this.firaCode, $"{v2Delta.FastNormalizedCopy()}", Vector2(100f, 120f), Color.Black);
+        spriteBatch.DrawString(this.firaCode, $"{v2Delta.NormalizedCopy()}", Vector2(100f, 140f), Color.Black);
 
-        spriteBatch.DrawString(this.firaCode, $"v2: {v2}", Vector2(100f, 100f), Color.Black);
+        spriteBatch.DrawString(this.firaCode, $"isqrt({sqrtVal}): {iSqrt1}, {iSqrt2}", Vector2(100f, 200f), Color.Black);
+
+        spriteBatch.DrawString(this.firaCode, $"dot {dot}", Vector2(100f, 300f), Color.Black);
 
         spriteBatch.End()
 
