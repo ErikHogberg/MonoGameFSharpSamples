@@ -23,6 +23,11 @@ type Point2 with
     member this.ToVector() = Vector2(this.X, this.Y)
 
 type Vector2 with
+    member this.Rotate90Clockwise () =
+        Vector2(this.Y, -this.X)
+    member this.Rotate90CounterClockwise () =
+        Vector2(-this.Y, this.X)
+
     member this.MoveTowards (target: Vector2, maxDistance) =        
         if this = target || maxDistance > 0f && maxDistance * maxDistance > (target - this).LengthSquared() then
             target
@@ -37,14 +42,17 @@ type Vector2 with
         if maxDistance > 0f && this = target then
             target 
         else
-            (Vector2.Normalize(this.MoveTowards(target, maxDistance))) * magnitude
+
+            (this.MoveTowards(target, maxDistance)).NormalizedCopy() * magnitude
+            // TODO: choose clockwise or ccw depending on dot cross sign
+            // (this.MoveTowards(this.Rotate90CounterClockwise(), maxDistance)).NormalizedCopy() * magnitude
 
     member this.MoveTowards (target: Vector2, maxDistance, emergencyDir: Vector2) =
         if maxDistance < 0f && this = target then
             emergencyDir.NormalizedCopy() * maxDistance
         else
             this.MoveTowards( target, maxDistance)
-        
+    
 
 
 type TransformCollisionActor
