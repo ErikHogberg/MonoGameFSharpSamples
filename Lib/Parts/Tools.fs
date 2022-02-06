@@ -17,6 +17,7 @@ type FloatConverter =
         val mutable i: int;
     end
 
+// calculates an approximation of 1/sqrt(x)
 // src: https://github.com/CartBlanche/MonoGame-Samples/blob/master/FarseerPhysicsEngine/Common/Math.cs#L149-L163
 let InverseSqrt(x:float32) =
     let mutable convert = FloatConverter()
@@ -47,9 +48,14 @@ type Point2 with
 
 type Vector2 with
 
+    // fast approximation of normalized vector
     member this.FastNormalizedCopy () =
-        let inverseSqrt = InverseSqrt(this.X * this.X + this.Y * this.Y )
-        this * inverseSqrt
+        this * InverseSqrt(this.X * this.X + this.Y * this.Y )
+
+    // fast approximation of vector magnitude
+    member this.FastLength() =
+        1f/InverseSqrt(this.X * this.X + this.Y * this.Y )
+        
 
     member this.Rotate90Clockwise () =
         Vector2(this.Y, -this.X)
@@ -63,18 +69,26 @@ type Vector2 with
             let deltaDir = target - this
             (this +  deltaDir.FastNormalizedCopy() * maxDistance)
     
-    // TODO: make rotation distance more consistent
-    // IDEA: translate target argument value to position perpendicular to direction to origin from this vector, keeping magnitude of delta between target and this vector. try not using sqrt
     member this.RotateTowards (target: Vector2) maxDistance =
-        let magnitude = this.Length()
-        if maxDistance > 0f && this = target then
+        let magnitude = this.FastLength()
+        if maxDistance > 0f && (this - target).FastLength() < maxDistance then
             target 
+        else if maxDistance < 0f && (this - (-target)).FastLength() < -maxDistance then
+            -target 
         else
             // (this.MoveTowards(target, maxDistance)).FastNormalizedCopy() * magnitude
             if Vector2.Dot(target.Rotate90Clockwise().FastNormalizedCopy(), this.FastNormalizedCopy()) > 0f then
                 (this.MoveTowards(this.Rotate90CounterClockwise(), maxDistance)).NormalizedCopy() * magnitude
             else
                 (this.MoveTowards(this.Rotate90Clockwise(), maxDistance)).NormalizedCopy() * magnitude
+    
+    // version that doesn't bother with restricting rotating past target
+    member this.FasterRotateTowards (target: Vector2) maxDistance =
+        let magnitude = this.FastLength()
+        if Vector2.Dot(target.Rotate90Clockwise().FastNormalizedCopy(), this.FastNormalizedCopy()) > 0f then
+            (this.MoveTowards(this.Rotate90CounterClockwise(), maxDistance)).NormalizedCopy() * magnitude
+        else
+            (this.MoveTowards(this.Rotate90Clockwise(), maxDistance)).NormalizedCopy() * magnitude
 
     member this.MoveTowards (target: Vector2, maxDistance, emergencyDir: Vector2) =
         if maxDistance < 0f && this = target then

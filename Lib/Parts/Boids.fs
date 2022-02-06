@@ -188,26 +188,23 @@ type BoidsSystem (boundaries: EllipseF) =
                 if closestDistanceSqr < maxDistanceSqr then
                     if closestDistanceSqr < minDistanceSqr then
                         // separation
-                        // TODO: steer away from closest nearby boid when too close
                         let velocityMagnitude = boid.Velocity.Length()
                         let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
-                        let dir = boid.Velocity.NormalizedCopy().RotateTowards (otherBoid.Velocity.NormalizedCopy()) (-separationSteerSpeed *dt)
+                        let dir = boid.Velocity.NormalizedCopy().FasterRotateTowards (otherBoid.Velocity.NormalizedCopy()) (-separationSteerSpeed *dt)
                         boid.Velocity <- dir*velocityMagnitude
                         ()
                     else
                         // alignment                
                         let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
-                        // TODO: match direction and speed of closest boid
                         boid.Velocity <- boid.Velocity.MoveTowards(otherBoid.Velocity, (alignmentSpeed*dt))
 
                         ()
                     ()
                 else
                     // cohesion
-                    // TODO: steer towards closest nearby boid
                     let velocityMagnitude = boid.Velocity.Length()
                     let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
-                    let dir = boid.Velocity.NormalizedCopy().RotateTowards (otherBoid.Velocity.NormalizedCopy()) (cohesionSteerSpeed*dt)
+                    let dir = boid.Velocity.NormalizedCopy().FasterRotateTowards (otherBoid.Velocity.NormalizedCopy()) (cohesionSteerSpeed*dt)
                     boid.Velocity <- dir*velocityMagnitude
                         
                     ()

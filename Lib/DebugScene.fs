@@ -41,8 +41,8 @@ type DebugScene(game: Game) =
     let mutable iSqrt2 = 0f;
     let mutable sqrtVal = 1f;
 
-    let mutable cross = 1f;
-    let mutable dot = 1f;
+    let mutable fastLength = 1f;
+    let mutable length = 1f;
     
     
     override this.Initialize() =
@@ -78,7 +78,8 @@ type DebugScene(game: Game) =
                 iSqrt1 <- 1f/MathF.Sqrt(sqrtVal)
                 iSqrt2 <- Tools.InverseSqrt(sqrtVal)
                 sqrtVal <- sqrtVal + 1f
-                dot <- Vector2.Dot((v1-v3).Rotate90Clockwise().FastNormalizedCopy(), (v2-v3).FastNormalizedCopy())
+                fastLength <- (v2-v3).FastLength()
+                length <- (v2-v3).Length()
                 ()
             if args.Key = Keys.Left then
                 v2 <- v2 - Vector2.UnitX*10f
@@ -123,7 +124,8 @@ type DebugScene(game: Game) =
 
         spriteBatch.DrawString(this.firaCode, $"isqrt({sqrtVal}): {iSqrt1}, {iSqrt2}", Vector2(100f, 200f), Color.Black);
 
-        spriteBatch.DrawString(this.firaCode, $"dot {dot}", Vector2(100f, 300f), Color.Black);
+        spriteBatch.DrawString(this.firaCode, $"ln: {fastLength} (fast)", Vector2(100f, 300f), Color.Black);
+        spriteBatch.DrawString(this.firaCode, $"ln: {length}", Vector2(100f, 320f), Color.Black);
 
         spriteBatch.End()
 
