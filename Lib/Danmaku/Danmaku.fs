@@ -20,6 +20,7 @@ open RenderSystem
 open GameScreenWithComponents
 open Asteroids
 open Boids
+open Bullets
 
 type DanmakuGame(game: Game) =
     inherit GameScreenWithComponents(game)
@@ -36,12 +37,16 @@ type DanmakuGame(game: Game) =
     val mutable asteroidsRenderSystem: AsteroidRenderSystem
 
     [<DefaultValue>]
+    val mutable bullets1: BulletSystem
+
+    [<DefaultValue>]
     val mutable boids1: BoidsSystem
 
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
 
     let box = RectangleF(600f, 200f, 50f,80f)
     let bubble = EllipseF(Vector2(600f, 400f), 50f,80f)
+    let bulletTarget = CircleF(Vector2(400f, 200f), 1f)
 
     let boidsTarget = CircleF(Vector2(1300f, 600f), 0.2f)
 
@@ -71,6 +76,13 @@ type DanmakuGame(game: Game) =
                 .RepeatForever(0.5f)
                 .AutoReverse()
                 .Easing(easingFn)
+        
+        // TODO: tween move bullet target left and right to test homing
+        // let tween2 = 
+        //     tweener.TweenTo(bulletTarget, (fun bulletTarget -> bulletTarget.Center.X), 100f, 1f, 1f)
+        //         .RepeatForever(0.5f)
+        //         .AutoReverse()
+        //         .Easing(easingFn)
 
         let listenerComponent =
             new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
@@ -80,6 +92,15 @@ type DanmakuGame(game: Game) =
         kbdListener.KeyPressed.Add(fun args  ->
             if args.Key = Keys.Space then
                 this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
+                ()
+            if args.Key = Keys.Z then
+                this.bullets1.Firing <- true
+                ()
+            ())
+
+        kbdListener.KeyReleased.Add(fun args  ->
+            if args.Key = Keys.Z then
+                this.bullets1.Firing <- false
                 ()
             ())
 
@@ -100,6 +121,11 @@ type DanmakuGame(game: Game) =
         this.boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center, 300f, 450f))
         this.boids1.Target <- boidsTarget
 
+        this.bullets1 <- new BulletSystem(Transform2(Vector2(300f, 600f)),RectangleF(Point2(200f,100f), Size2(400f, 600f)))
+
+        // TODO
+        this.bullets1.Target <- bulletTarget//CircleF(Vector2(300f, 200f), 1f)
+
         let world =
             WorldBuilder()
                 
@@ -111,6 +137,9 @@ type DanmakuGame(game: Game) =
 
                 .AddSystem(this.boids1)
                 .AddSystem(new BoidsRenderSystem(this.GraphicsDevice, this.camera))
+
+                .AddSystem(this.bullets1)
+                .AddSystem(new BulletRenderSystem(this.GraphicsDevice, this.camera))
 
                 .Build()
 

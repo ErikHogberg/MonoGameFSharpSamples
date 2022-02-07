@@ -19,6 +19,7 @@
     <Compile Include="Parts/RenderSystem.fs"/>
     <Compile Include="Parts/UpdateSystem.fs"/>
     <Compile Include="Parts/GameScreenWithComponents.fs"/>
+    <Compile Include="Danmaku/Bullets.fs"/>
     <Compile Include="Danmaku/Danmaku.fs"/>
     <Compile Include="Danmaku/DanmakuPlayer.fs"/>
     <Compile Include="SpaceTactics/SpaceTactics.fs"/>
