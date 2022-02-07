@@ -1,5 +1,7 @@
 module Boids
 
+open System.Linq
+
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
 
@@ -274,6 +276,16 @@ type BoidsSystem (boundaries: EllipseF) =
             spawnDelay <- random.NextSingle(MinSpawnDelay, MaxSpawnDelay)
 
         ()
+
+    interface ICollidable with
+        member this.CheckCollision other =
+            // let mutable hit = false
+            // for boid in (collisionTree.Query other) do
+            //     if boid.Bounds.Intersects other then
+            //         hit <- true
+            //     ()
+            // hit
+            (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other )
 
 // rendering system
 type BoidsRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =

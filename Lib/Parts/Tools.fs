@@ -115,3 +115,5 @@ type TransformCollisionActor
         member this.Bounds = CircleF(transform.Position, radius)
         member this.OnCollision(args) = onCollision (args)
 
+type ICollidable =
+    abstract member CheckCollision: IShapeF -> bool
