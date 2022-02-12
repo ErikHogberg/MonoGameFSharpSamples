@@ -16,6 +16,7 @@ open MonoGame.Extended.Screens
 open MonoGame.Extended.Screens.Transitions
 open MonoGame.Extended.Tweening
 
+// open DanmakuPlayer
 open RenderSystem
 open GameScreenWithComponents
 open Asteroids
@@ -44,8 +45,12 @@ type DanmakuGame(game: Game) =
 
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
 
+    let playerSpeed = 300f;
+    let player = Player(playerSpeed,Vector2(300f, 600f))
+    let playerBoundaries = RectangleF(Point2(200f,100f), Size2(400f, 600f))
+
     let box = RectangleF(600f, 200f, 50f,80f)
-    let bubble = EllipseF(Vector2(600f, 400f), 50f,80f)
+    let bubble = EllipseF(Vector2(600f, 400f), 50f,80f) 
     let bulletTarget = CircleF(Vector2(400f, 200f), 1f)
 
     let boidsTarget = CircleF(Vector2(1300f, 600f), 0.2f)
@@ -90,18 +95,52 @@ type DanmakuGame(game: Game) =
         this.Components.Add listenerComponent
 
         kbdListener.KeyPressed.Add(fun args  ->
-            if args.Key = Keys.Space then
+
+            // FIXME: something is still wrong with the movement, not fully responsive
+            match args.Key with 
+            | Keys.Space ->
                 this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
-                ()
-            if args.Key = Keys.Z then
+            | Keys.Z ->
                 this.bullets1.Firing <- true
-                ()
+            | Keys.W | Keys.I ->
+                // player.SetVelocity(Vector2.UnitY * -playerSpeed)
+                player.CurrentVelocity <- Vector2.UnitY * -playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
+            | Keys.A | Keys.J ->
+                player.CurrentVelocity <- Vector2.UnitX * -playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
+                // player.SetVelocity(Vector2.UnitX * -playerSpeed)
+            | Keys.S | Keys.K ->
+                player.CurrentVelocity <- Vector2.UnitY * playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
+                // player.SetVelocity(Vector2.UnitY * playerSpeed)
+            | Keys.D | Keys.L ->
+                player.CurrentVelocity <- Vector2.UnitX * playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
+                // player.SetVelocity(Vector2.UnitX * playerSpeed)
+            | _ -> ()
+
             ())
 
-        kbdListener.KeyReleased.Add(fun args  ->
-            if args.Key = Keys.Z then
+        kbdListener.KeyReleased.Add(fun args ->
+            // if args.Key = Keys.Z then
+            //     this.bullets1.Firing <- false
+            //     ()
+
+            match args.Key with 
+            // | Keys.Space ->
+                // this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
+            | Keys.Z ->
                 this.bullets1.Firing <- false
-                ()
+            | Keys.W | Keys.I ->
+                if( player.CurrentVelocity.Y < 0f) then
+                    player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
+            | Keys.A | Keys.J ->
+                if( player.CurrentVelocity.X < 0f) then
+                    player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
+            | Keys.S | Keys.K ->
+                if( player.CurrentVelocity.Y > 0f) then
+                    player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
+            | Keys.D | Keys.L ->
+                if( player.CurrentVelocity.X > 0f) then
+                    player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
+            | _ -> ()
             ())
 
         base.Initialize()
@@ -121,7 +160,7 @@ type DanmakuGame(game: Game) =
         this.boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center, 300f, 450f))
         this.boids1.Target <- boidsTarget
 
-        this.bullets1 <- new BulletSystem(Transform2(Vector2(300f, 600f)),RectangleF(Point2(200f,100f), Size2(400f, 600f)))
+        this.bullets1 <- new BulletSystem(player.Transform,playerBoundaries)
 
         // TODO
         this.bullets1.Target <- bulletTarget//CircleF(Vector2(300f, 200f), 1f)
@@ -158,11 +197,14 @@ type DanmakuGame(game: Game) =
         let dt = gameTime.GetElapsedSeconds()
 
         // TODO: tweener component or entity?
-        tweener.Update(dt)
+        tweener.Update dt
 
         asteroidAngle <- (asteroidAngle + dt * 0.15f) % MathF.Tau
         this.asteroids1.SpawnAngle <- asteroidAngle
         this.boids1.SpawnAngle <- MathF.Tau - asteroidAngle
+
+        player.Update gameTime
+        player.ConstrainToFrame playerBoundaries
 
         base.Update gameTime
         ()
@@ -190,6 +232,8 @@ type DanmakuGame(game: Game) =
 
 
         spriteBatch.DrawCircle(boidsTarget, 12, Color.Chartreuse)
+
+        player.Draw spriteBatch gameTime
 
         spriteBatch.End()
 
