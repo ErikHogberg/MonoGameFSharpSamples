@@ -22,8 +22,8 @@ open Asteroids
 open Boids
 open Bullets
 
-type DanmakuGame(game: Game) =
-    inherit GameScreenWithComponents(game)
+type DanmakuGame (game) =
+    inherit GameScreenWithComponents (game)
 
     let mutable dot: Texture2D = null
     let mutable camera: OrthographicCamera = null
@@ -52,6 +52,10 @@ type DanmakuGame(game: Game) =
     let mutable touchListener = TouchListener()
     let mutable kbdListener = KeyboardListener()
 
+    let mutable upPressed = false
+    let mutable leftPressed = false
+    let mutable downPressed = false
+    let mutable rightPressed = false
     
     override this.Initialize() =
         
@@ -85,22 +89,25 @@ type DanmakuGame(game: Game) =
 
         kbdListener.KeyPressed.Add(fun args  ->
 
-            // FIXME: something is still wrong with the movement, not fully responsive
             match args.Key with 
             | Keys.Space ->
                 asteroidsRenderSystem.AlwaysShow <- not asteroidsRenderSystem.AlwaysShow
             | Keys.Z ->
                 bullets1.Firing <- true
             | Keys.W | Keys.I ->
+                upPressed <- true
                 // player.SetVelocity(Vector2.UnitY * -playerSpeed)
                 player.CurrentVelocity <- Vector2.UnitY * -playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
             | Keys.A | Keys.J ->
+                leftPressed <- true
                 player.CurrentVelocity <- Vector2.UnitX * -playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
                 // player.SetVelocity(Vector2.UnitX * -playerSpeed)
             | Keys.S | Keys.K ->
+                downPressed <- true
                 player.CurrentVelocity <- Vector2.UnitY * playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
                 // player.SetVelocity(Vector2.UnitY * playerSpeed)
             | Keys.D | Keys.L ->
+                rightPressed <- true
                 player.CurrentVelocity <- Vector2.UnitX * playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
                 // player.SetVelocity(Vector2.UnitX * playerSpeed)
             | _ -> ()
@@ -118,17 +125,34 @@ type DanmakuGame(game: Game) =
             | Keys.Z ->
                 bullets1.Firing <- false
             | Keys.W | Keys.I ->
+                upPressed <- false
                 if( player.CurrentVelocity.Y < 0f) then
-                    player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
+                    if downPressed then
+                        player.CurrentVelocity <- Vector2.UnitY * playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
+                    else
+                        player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
             | Keys.A | Keys.J ->
+                leftPressed <- false
                 if( player.CurrentVelocity.X < 0f) then
-                    player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
+                    if rightPressed then 
+                        player.CurrentVelocity <- Vector2.UnitX * playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
+                    else
+                        player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
             | Keys.S | Keys.K ->
+                downPressed <- false
                 if( player.CurrentVelocity.Y > 0f) then
-                    player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
+                    if upPressed then
+                        player.CurrentVelocity <- Vector2.UnitY * -playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
+                    else
+                        player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
             | Keys.D | Keys.L ->
+                rightPressed <- false
                 if( player.CurrentVelocity.X > 0f) then
-                    player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
+                    if leftPressed then 
+                        player.CurrentVelocity <- Vector2.UnitX * -playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
+                    else
+                        player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
+
             | _ -> ()
             ())
 
