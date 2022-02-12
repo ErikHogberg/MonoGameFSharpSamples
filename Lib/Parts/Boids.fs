@@ -184,7 +184,7 @@ type BoidsSystem (boundaries: EllipseF) =
 
                     ()
 
-                // TODO: use average facing instead of facing of closet, where applicable
+                // TODO: use average facing instead of facing of closest, where applicable
             
                 // choose which flocking behaviour to use
                 if closestDistanceSqr < maxDistanceSqr then
