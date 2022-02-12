@@ -8,10 +8,12 @@ open Microsoft.Xna.Framework.Graphics
 
 open type System.MathF
 
-type AsteroidExpiry =
-    val mutable TimeRemaining: float32
+type AsteroidExpiry (timeRemaining: float32) =
+    let mutable timeRemaining = timeRemaining
 
-    new(timeRemaining: float32) = { TimeRemaining = timeRemaining }
+    member this.TimeRemaining with get() = timeRemaining and set(value) = timeRemaining <- value
+
+    
 
 
 type Asteroid(velocity: Vector2, size: float32) =
@@ -39,15 +41,14 @@ type Asteroid(velocity: Vector2, size: float32) =
 type AsteroidExpirySystem() =
     inherit EntityProcessingSystem(Aspect.All(typedefof<AsteroidExpiry>))
 
-    [<DefaultValue>]
-    val mutable expiryMapper: ComponentMapper<AsteroidExpiry>
+    let mutable expiryMapper: ComponentMapper<AsteroidExpiry> = null
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.expiryMapper <- mapperService.GetMapper<AsteroidExpiry>()
+        expiryMapper <- mapperService.GetMapper<AsteroidExpiry>()
         ()
 
     override this.Process(gameTime: GameTime, enityId: int) =
-        let mutable expiry = this.expiryMapper.Get(enityId)
+        let mutable expiry = expiryMapper.Get(enityId)
 
         expiry.TimeRemaining <-
             expiry.TimeRemaining
@@ -67,14 +68,9 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
 
     // mappers for accessing components
 
-    [<DefaultValue>]
-    val mutable transformMapper: ComponentMapper<Transform2>
-
-    [<DefaultValue>]
-    val mutable asteroidMapper: ComponentMapper<Asteroid>
-
-    [<DefaultValue>]
-    val mutable expiryMapper: ComponentMapper<AsteroidExpiry>
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable asteroidMapper: ComponentMapper<Asteroid> = null
+    let mutable expiryMapper: ComponentMapper<AsteroidExpiry> = null
 
     // asteroid shield/obstruction
     let mutable bubble = EllipseF(Vector2.One, 1f, 1f)
@@ -86,7 +82,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
 
     // asteroid shower render/despawn boundaries
     // let mutable boundaries = boundaries
-    let mutable boundaries = boundaries
+    let boundaries = boundaries
 
 
     let mutable spawnAngle = 0f
@@ -144,17 +140,17 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.asteroidMapper <- mapperService.GetMapper<Asteroid>()
-        this.expiryMapper <- mapperService.GetMapper<AsteroidExpiry>()
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        asteroidMapper <- mapperService.GetMapper<Asteroid>()
+        expiryMapper <- mapperService.GetMapper<AsteroidExpiry>()
         ()
 
     override this.Update(gameTime: GameTime) =
         let dt = gameTime.GetElapsedSeconds()
 
         for entityId in this.ActiveEntities do
-            let transform = this.transformMapper.Get(entityId)
-            let asteroid = this.asteroidMapper.Get(entityId)
+            let transform = transformMapper.Get(entityId)
+            let asteroid = asteroidMapper.Get(entityId)
 
             // move asteroid
             transform.Position <- transform.Position + asteroid.Velocity * dt
@@ -170,7 +166,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
                 asteroid.Entered <- true
 
             // check if the asteroid is an impact effect asteroid fragment as opposed to a normal asteroid
-            let hasExpiry = this.expiryMapper.Has(entityId)
+            let hasExpiry = expiryMapper.Has(entityId)
 
             // spawn 3 asteroids (with a set lifetime) upon either hitting the shield or leaving the boundary, also despawns old asteroid
             if ((asteroid.Entered && not inBoundary) || dropHitBox 
@@ -198,7 +194,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
                         )
 
                     // add a time expiration of 1 second for the new asteroids, making them despawn by timer instead of collision
-                    this.expiryMapper.Put(id, AsteroidExpiry(1f))
+                    expiryMapper.Put(id, AsteroidExpiry(1f))
 
                 // destroy the old asteroid
                 this.DestroyEntity(entityId)

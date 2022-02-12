@@ -24,19 +24,12 @@ open Asteroids
 type SpaceGame(game: Game) =
     inherit GameScreenWithComponents(game)
 
+    let mutable dot: Texture2D = null
+    let mutable camera: OrthographicCamera = null
+    let mutable asteroids1: AsteroidShowerSystem = Unchecked.defaultof<AsteroidShowerSystem>
+    let mutable asteroidsRenderSystem: AsteroidRenderSystem = Unchecked.defaultof<AsteroidRenderSystem>
 
-    [<DefaultValue>]
-    val mutable dot: Texture2D
-    
-    [<DefaultValue>]
-    val mutable camera: OrthographicCamera
-
-    [<DefaultValue>]
-    val mutable asteroids1: AsteroidShowerSystem
-    [<DefaultValue>]
-    val mutable asteroidsRenderSystem: AsteroidRenderSystem
-
-    let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
+    let mutable spriteBatch: SpriteBatch = null
 
     let box = RectangleF(600f, 200f, 50f,80f)
     let bubble = EllipseF(Vector2(600f, 400f), 50f,80f)
@@ -45,20 +38,18 @@ type SpaceGame(game: Game) =
 
     let tweener = new Tweener()
 
-    let mutable mouseListener = MouseListener()
-    let mutable touchListener = TouchListener()
-    let mutable kbdListener = KeyboardListener()
+    let mouseListener = MouseListener()
+    let touchListener = TouchListener()
+    let kbdListener = KeyboardListener()
 
     
     override this.Initialize() =
-        
         
         let viewportAdapter =
             // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
             new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
 
-        this.camera <- OrthographicCamera(viewportAdapter)
-
+        camera <- OrthographicCamera(viewportAdapter)
 
         let easingFn = EasingFunctions.QuadraticIn
 
@@ -75,7 +66,7 @@ type SpaceGame(game: Game) =
 
         kbdListener.KeyPressed.Add(fun args  ->
             if args.Key = Keys.Space then
-                this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
+                asteroidsRenderSystem.AlwaysShow <- not asteroidsRenderSystem.AlwaysShow
                 ()
             ())
 
@@ -85,22 +76,22 @@ type SpaceGame(game: Game) =
     override this.LoadContent() =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
 
-        this.dot <- this.Content.Load "1px"
+        dot <- this.Content.Load "1px"
 
-        this.asteroids1 <- new AsteroidShowerSystem(EllipseF(bubble.Center, 300f, 200f))
-        this.asteroids1.Bubble <- bubble
+        asteroids1 <- new AsteroidShowerSystem(EllipseF(bubble.Center, 300f, 200f))
+        asteroids1.Bubble <- bubble
 
-        this.asteroidsRenderSystem <- new AsteroidRenderSystem(this.GraphicsDevice, this.camera)
+        asteroidsRenderSystem <- new AsteroidRenderSystem(this.GraphicsDevice, camera)
 
         let world =
             WorldBuilder()
                 
-                .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, this.camera))
+                .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, camera))
                 // .AddSystem(new TransformUpdateSystem())
 
-                .AddSystem(this.asteroids1)
+                .AddSystem(asteroids1)
                 .AddSystem(new AsteroidExpirySystem())
-                .AddSystem(this.asteroidsRenderSystem)
+                .AddSystem(asteroidsRenderSystem)
 
                 .Build()
 
@@ -108,7 +99,7 @@ type SpaceGame(game: Game) =
 
         let testEntity = world.CreateEntity()
         testEntity.Attach(Transform2(100f, 300f, 0f, 100f, 100f))
-        let mutable dotSprite = Sprite(this.dot)
+        let dotSprite = Sprite(dot)
         dotSprite.Color <- Color.Goldenrod
         testEntity.Attach(dotSprite)
 
@@ -122,7 +113,7 @@ type SpaceGame(game: Game) =
         tweener.Update(dt)
 
         asteroidAngle <- (asteroidAngle + dt * 0.15f) % MathF.Tau
-        this.asteroids1.SpawnAngle <- asteroidAngle
+        asteroids1.SpawnAngle <- asteroidAngle
 
         base.Update gameTime
         ()
@@ -130,24 +121,23 @@ type SpaceGame(game: Game) =
     override this.Draw(gameTime) =
         this.GraphicsDevice.Clear Color.Gray
 
-        spriteBatch.Begin(transformMatrix = this.camera.GetViewMatrix())
+        spriteBatch.Begin(transformMatrix = camera.GetViewMatrix())
 
         spriteBatch.DrawEllipse(bubble.Center, Vector2(bubble.RadiusX, bubble.RadiusY), 32, Color.Azure)
 
-        let pointOnBoundary = this.asteroids1.PointOnBoundary
+        let pointOnBoundary = asteroids1.PointOnBoundary
         
         spriteBatch.DrawCircle(pointOnBoundary, 5f, 12, Color.Black)
-        let rect = this.asteroids1.SpawnRange()
-        let topleft =(Vector2(rect.TopLeft.X, rect.TopLeft.Y)).Rotate(this.asteroids1.SpawnAngle) + pointOnBoundary
-        let topright=(Vector2(rect.TopRight.X, rect.TopRight.Y)).Rotate(this.asteroids1.SpawnAngle)  + pointOnBoundary
-        let bottomleft =(Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(this.asteroids1.SpawnAngle) + pointOnBoundary
-        let bottomright =(Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(this.asteroids1.SpawnAngle) + pointOnBoundary
+        let rect = asteroids1.SpawnRange()
+        let topleft =(Vector2(rect.TopLeft.X, rect.TopLeft.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
+        let topright=(Vector2(rect.TopRight.X, rect.TopRight.Y)).Rotate(asteroids1.SpawnAngle)  + pointOnBoundary
+        let bottomleft =(Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
+        let bottomright =(Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
 
         spriteBatch.DrawLine(topleft, topright, Color.Brown)
         spriteBatch.DrawLine(topleft, bottomleft, Color.Brown)
         spriteBatch.DrawLine(bottomright, topright, Color.Brown)
         spriteBatch.DrawLine(bottomright, bottomleft, Color.Brown)
-
 
         spriteBatch.End()
 

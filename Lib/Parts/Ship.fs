@@ -7,14 +7,12 @@ open Tools
 open Microsoft.FSharp.Collections
 
 type Tile() =
-    [<DefaultValue>]
-    val mutable neighbors: List<Tile>
+    let mutable neighbors: List<Tile> = []
     
 
 
 type SpaceShip() =
-    [<DefaultValue>]
-    val mutable tiles: List<Tile>
+    let mutable tiles: List<Tile> = []
     
     
 

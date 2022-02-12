@@ -47,11 +47,8 @@ type BulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
 
     // mappers for accessing components
 
-    [<DefaultValue>]
-    val mutable transformMapper: ComponentMapper<Transform2>
-
-    [<DefaultValue>]
-    val mutable bulletMapper: ComponentMapper<Bullet>
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable bulletMapper: ComponentMapper<Bullet> = null
 
     // homing target of bullets, pull force magnitude corresponds to radius
     let mutable target = CircleF(Vector2.One, 1f)
@@ -87,8 +84,8 @@ type BulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.bulletMapper <- mapperService.GetMapper<Bullet>()
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        bulletMapper <- mapperService.GetMapper<Bullet>()
         ()
 
     override this.Update(gameTime: GameTime) =
@@ -98,8 +95,8 @@ type BulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
         let nextCollisionTree = Quadtree collisionTreeBounds
         
         for entityId in this.ActiveEntities do
-            let transform = this.transformMapper.Get(entityId)
-            let bullet = this.bulletMapper.Get(entityId)
+            let transform = transformMapper.Get(entityId)
+            let bullet = bulletMapper.Get(entityId)
 
             // check if asteroid is inside the render boundary
             let inBoundary = boundaries.Contains(transform.Position)
@@ -164,16 +161,13 @@ type BulletRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCame
     // the boids have their own sprite batch
     let spriteBatch = new SpriteBatch(graphicsDevice)
 
-    [<DefaultValue>]
-    val mutable transformMapper: ComponentMapper<Transform2>
-
-    [<DefaultValue>]
-    val mutable bulletMapper: ComponentMapper<Bullet>
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable bulletMapper: ComponentMapper<Bullet> = null
 
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.bulletMapper <- mapperService.GetMapper<Bullet>()
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        bulletMapper <- mapperService.GetMapper<Bullet>()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -184,8 +178,8 @@ type BulletRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCame
         spriteBatch.Begin(samplerState = SamplerState.PointClamp, transformMatrix = transformMatrix)
 
         for entity in this.ActiveEntities do
-            let transform = this.transformMapper.Get(entity)
-            let boid = this.bulletMapper.Get(entity)
+            let transform = transformMapper.Get(entity)
+            let boid = bulletMapper.Get(entity)
 
             // only draw boids if they have entered the boundary
             spriteBatch.FillRectangle(transform.Position, Size2(boid.Size, boid.Size), Color.Black)

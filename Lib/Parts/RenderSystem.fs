@@ -18,15 +18,12 @@ type SpriteRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCame
     let camera = camera
     let spriteBatch = new SpriteBatch(graphicsDevice)
 
-    [<DefaultValue>]
-    val mutable transformMapper: ComponentMapper<Transform2>
-
-    [<DefaultValue>]
-    val mutable spriteMapper: ComponentMapper<Sprite>
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable spriteMapper: ComponentMapper<Sprite> = null
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.spriteMapper <- mapperService.GetMapper<Sprite>()
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        spriteMapper <- mapperService.GetMapper<Sprite>()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -35,8 +32,8 @@ type SpriteRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCame
         spriteBatch.Begin(transformMatrix = transformMatrix)
 
         for entityId in this.ActiveEntities do
-            let transform = this.transformMapper.Get entityId
-            let sprite = this.spriteMapper.Get entityId
+            let transform = transformMapper.Get entityId
+            let sprite = spriteMapper.Get entityId
             spriteBatch.Draw(sprite, transform)
 
         spriteBatch.End()

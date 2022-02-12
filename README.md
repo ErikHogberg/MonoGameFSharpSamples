@@ -9,6 +9,7 @@ It currently has a setup of 3 projects: a desktop project, an untested C# androi
 The recommended starting point for reading the game code is the shared library (./Lib/Library.fs).
 
 At the moment the project only shows an asteroid shower using MonoGame.Extended entities based on the [rain example](https://www.monogameextended.net/docs/features/entities/entities/#example).
+Use number keys to switch between "game screens".
 Press space to toggle rendering of asteroids outside of its collision boundary, press esc to close the program.
 
 The aim is to eventually create a few simplified game clones, such the spaceship battle gameplay from FTL, and a Touhou-style bullet hell game.

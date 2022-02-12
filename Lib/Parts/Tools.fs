@@ -115,5 +115,6 @@ type TransformCollisionActor
         member this.Bounds = CircleF(transform.Position, radius)
         member this.OnCollision(args) = onCollision (args)
 
+// interface for collision checking support
 type ICollidable =
-    abstract member CheckCollision: IShapeF -> bool
+    abstract member CheckCollision: IShapeF -> bool // true if supplied shape collides with interface implementer

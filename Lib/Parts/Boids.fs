@@ -49,8 +49,6 @@ type BoidsSystem (boundaries: EllipseF) =
 
     // IDEA: re-add wind
 
-    // let targetDistance = 10f
-    // let steerSpeed = 1f
     let visualRange = 100f
     let visualSize = 1f
 
@@ -62,11 +60,8 @@ type BoidsSystem (boundaries: EllipseF) =
 
     // mappers for accessing components
 
-    [<DefaultValue>]
-    val mutable transformMapper: ComponentMapper<Transform2>
-
-    [<DefaultValue>]
-    val mutable boidMapper: ComponentMapper<Boid>
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable boidMapper: ComponentMapper<Boid> = null
 
     // gravity target of boids, pull force magnitude corresponds to radius
     let mutable target = CircleF(Vector2.One, 1f)
@@ -125,7 +120,7 @@ type BoidsSystem (boundaries: EllipseF) =
         with get() = boundaries.Center
             + Vector2(
                 boundaries.RadiusX * Cos(spawnAngle + PI*0.5f), 
-                boundaries.RadiusY * Sin(spawnAngle + PI*0.5f) );
+                boundaries.RadiusY * Sin(spawnAngle + PI*0.5f));
 
     member this.RandomSpawnPos
         with get() = Vector2(
@@ -148,8 +143,8 @@ type BoidsSystem (boundaries: EllipseF) =
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.boidMapper <- mapperService.GetMapper<Boid>()
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        boidMapper <- mapperService.GetMapper<Boid>()
         ()
 
     override this.Update(gameTime: GameTime) =
@@ -159,8 +154,8 @@ type BoidsSystem (boundaries: EllipseF) =
         let nextCollisionTree = Quadtree collisionTreeBounds
         
         for entityId in this.ActiveEntities do
-            let transform = this.transformMapper.Get(entityId)
-            let boid = this.boidMapper.Get(entityId)
+            let transform = transformMapper.Get(entityId)
+            let boid = boidMapper.Get(entityId)
 
             // get all neighbor entities in "visual" range
             let nearby = collisionTree.Query(CircleF(transform.Position, visualRange))
@@ -279,12 +274,6 @@ type BoidsSystem (boundaries: EllipseF) =
 
     interface ICollidable with
         member this.CheckCollision other =
-            // let mutable hit = false
-            // for boid in (collisionTree.Query other) do
-            //     if boid.Bounds.Intersects other then
-            //         hit <- true
-            //     ()
-            // hit
             (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other )
 
 // rendering system
@@ -299,16 +288,13 @@ type BoidsRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamer
     // the boids have their own sprite batch
     let spriteBatch = new SpriteBatch(graphicsDevice)
 
-    [<DefaultValue>]
-    val mutable transformMapper: ComponentMapper<Transform2>
-
-    [<DefaultValue>]
-    val mutable boidMapper: ComponentMapper<Boid>
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable boidMapper: ComponentMapper<Boid> = null
 
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.boidMapper <- mapperService.GetMapper<Boid>()
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        boidMapper <- mapperService.GetMapper<Boid>()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -319,8 +305,8 @@ type BoidsRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamer
         spriteBatch.Begin(samplerState = SamplerState.PointClamp, transformMatrix = transformMatrix)
 
         for entity in this.ActiveEntities do
-            let transform = this.transformMapper.Get(entity)
-            let boid = this.boidMapper.Get(entity)
+            let transform = transformMapper.Get(entity)
+            let boid = boidMapper.Get(entity)
 
             // only draw boids if they have entered the boundary
             spriteBatch.FillRectangle(transform.Position, Size2(boid.Size, boid.Size), Color.Orange)

@@ -9,22 +9,19 @@ open MonoGame.Extended.Entities.Systems
 open MonoGame.Extended.Sprites
 
 
-type TransformUpdateSystem()=
+type TransformUpdateSystem () =
     inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>).Exclude(typedefof<Asteroids.Asteroid>, typedefof<Boids.Boid>))
 
-    [<DefaultValue>]
-    val mutable transformMapper: ComponentMapper<Transform2>
+    let mutable transformMapper: ComponentMapper<Transform2> = null
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.transformMapper <- mapperService.GetMapper<Transform2>()
-        ()
+        transformMapper <- mapperService.GetMapper<Transform2>()
 
     override this.Update(gameTime: GameTime) =
-
         let dt = gameTime.GetElapsedSeconds()
 
         for entityId in this.ActiveEntities do
-            let mutable transform = this.transformMapper.Get entityId
+            let transform = transformMapper.Get entityId
             transform.Rotation <- transform.Rotation + dt * 10f
-        
+            
         ()

@@ -27,25 +27,28 @@ open Danmaku
 open SpaceTactics
 open DebugScene
 
+
+// TODO: use scene graphs
+
 type Game1() as x =
     inherit Game()
 
     do x.Content.RootDirectory <- "Content"
 
     let graphics = new GraphicsDeviceManager(x)
-    let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
+    let mutable spriteBatch: SpriteBatch = null
 
-    let mutable mouseListener = MouseListener()
-    let mutable touchListener = TouchListener()
-    let mutable kbdListener = KeyboardListener()
+    // note that listeners and many other things do not need to be mutable, despite being modified later. 
+    // only the reference to the class instance needs to be immutable 
+    let mouseListener = MouseListener()
+    let touchListener = TouchListener()
+    let kbdListener = KeyboardListener()
 
     let screenManager = new ScreenManager()
 
-    [<DefaultValue>]
-    val mutable camera: OrthographicCamera
+    let mutable camera: OrthographicCamera = null
+    let mutable dot: Texture2D = null
 
-    [<DefaultValue>]
-    val mutable dot: Texture2D
     
     override this.Initialize() =
 
@@ -89,7 +92,7 @@ type Game1() as x =
             // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
             new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
 
-        this.camera <- OrthographicCamera(viewportAdapter)
+        camera <- OrthographicCamera(viewportAdapter)
 
 
         base.Initialize()
@@ -99,7 +102,7 @@ type Game1() as x =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
 
         // printfn "content root: %s" this.Content.RootDirectory
-        this.dot <- this.Content.Load "1px"
+        dot <- this.Content.Load "1px"
 
         // Singleton.Instance.Set("dot", this.dot)
 

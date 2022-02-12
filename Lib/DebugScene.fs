@@ -20,22 +20,19 @@ open Tools
 type DebugScene(game: Game) =
     inherit GameScreenWithComponents(game)
 
-    [<DefaultValue>]
-    val mutable firaCode: SpriteFont
-    
-    [<DefaultValue>]
-    val mutable camera: OrthographicCamera
+    let mutable firaCode: SpriteFont = null
+    let mutable camera: OrthographicCamera = null
 
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
 
-    let mutable mouseListener = MouseListener()
-    let mutable touchListener = TouchListener()
-    let mutable kbdListener = KeyboardListener()
+    let mouseListener = MouseListener()
+    let touchListener = TouchListener()
+    let kbdListener = KeyboardListener()
 
 
-    let mutable v1= Vector2(500f,400f)
-    let mutable v2= Vector2(600f,400f)
-    let mutable v3= Vector2(550f,450f)
+    let mutable v1 = Vector2(500f,400f)
+    let mutable v2 = Vector2(600f,400f)
+    let mutable v3 = Vector2(550f,450f)
 
     let mutable iSqrt1 = 0f;
     let mutable iSqrt2 = 0f;
@@ -52,7 +49,7 @@ type DebugScene(game: Game) =
             // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
             new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
 
-        this.camera <- OrthographicCamera(viewportAdapter)
+        camera <- OrthographicCamera(viewportAdapter)
 
 
         let listenerComponent =
@@ -62,11 +59,9 @@ type DebugScene(game: Game) =
 
         kbdListener.KeyPressed.Add(fun args  ->
             if args.Key = Keys.E then
-                // v1 <- v1.MoveTowards v2 1f
                 v2 <- v3 + (v2-v3).MoveTowards (v1-v3, 10f )
                 ()
             if args.Key = Keys.Q then
-                // v1 <- v1.MoveTowards v2 -1f
                 v2 <- v3 + (v2-v3).MoveTowards (v1-v3, -10f, Vector2.UnitY)
             if args.Key = Keys.A then
                 v2 <- v3 + (v2-v3).RotateTowards (v1-v3) 10f
@@ -96,7 +91,7 @@ type DebugScene(game: Game) =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
 
         // this.dot <- this.Content.Load "1px"
-        this.firaCode <- this.Content.Load "Fira Code"
+        firaCode <- this.Content.Load "Fira Code"
 
        
         base.LoadContent()
@@ -111,21 +106,21 @@ type DebugScene(game: Game) =
     override this.Draw(gameTime) =
         this.GraphicsDevice.Clear Color.Beige
 
-        spriteBatch.Begin(transformMatrix = this.camera.GetViewMatrix())
+        spriteBatch.Begin(transformMatrix = camera.GetViewMatrix())
 
         spriteBatch.DrawCircle(v1, 15f, 8, Color.Red, 5f)
         spriteBatch.DrawCircle(v3, 15f, 8, Color.Green, 5f)
         spriteBatch.DrawCircle(v2, 15f, 8, Color.Blue, 5f)
 
         let v2Delta = v2-v3
-        spriteBatch.DrawString(this.firaCode, $"v2: {v2Delta}", Vector2(100f, 100f), Color.Black);
-        spriteBatch.DrawString(this.firaCode, $"{v2Delta.FastNormalizedCopy()}", Vector2(100f, 120f), Color.Black);
-        spriteBatch.DrawString(this.firaCode, $"{v2Delta.NormalizedCopy()}", Vector2(100f, 140f), Color.Black);
+        spriteBatch.DrawString(firaCode, $"v2: {v2Delta}", Vector2(100f, 100f), Color.Black);
+        spriteBatch.DrawString(firaCode, $"{v2Delta.FastNormalizedCopy()}", Vector2(100f, 120f), Color.Black);
+        spriteBatch.DrawString(firaCode, $"{v2Delta.NormalizedCopy()}", Vector2(100f, 140f), Color.Black);
 
-        spriteBatch.DrawString(this.firaCode, $"isqrt({sqrtVal}): {iSqrt1}, {iSqrt2}", Vector2(100f, 200f), Color.Black);
+        spriteBatch.DrawString(firaCode, $"isqrt({sqrtVal}): {iSqrt1}, {iSqrt2}", Vector2(100f, 200f), Color.Black);
 
-        spriteBatch.DrawString(this.firaCode, $"ln: {fastLength} (fast)", Vector2(100f, 300f), Color.Black);
-        spriteBatch.DrawString(this.firaCode, $"ln: {length}", Vector2(100f, 320f), Color.Black);
+        spriteBatch.DrawString(firaCode, $"ln: {fastLength} (fast)", Vector2(100f, 300f), Color.Black);
+        spriteBatch.DrawString(firaCode, $"ln: {length}", Vector2(100f, 320f), Color.Black);
 
         spriteBatch.End()
 

@@ -16,7 +16,6 @@ open MonoGame.Extended.Screens
 open MonoGame.Extended.Screens.Transitions
 open MonoGame.Extended.Tweening
 
-// open DanmakuPlayer
 open RenderSystem
 open GameScreenWithComponents
 open Asteroids
@@ -26,22 +25,12 @@ open Bullets
 type DanmakuGame(game: Game) =
     inherit GameScreenWithComponents(game)
 
-    [<DefaultValue>]
-    val mutable dot: Texture2D
-    
-    [<DefaultValue>]
-    val mutable camera: OrthographicCamera
-
-    [<DefaultValue>]
-    val mutable asteroids1: AsteroidShowerSystem
-    [<DefaultValue>]
-    val mutable asteroidsRenderSystem: AsteroidRenderSystem
-
-    [<DefaultValue>]
-    val mutable bullets1: BulletSystem
-
-    [<DefaultValue>]
-    val mutable boids1: BoidsSystem
+    let mutable dot: Texture2D = null
+    let mutable camera: OrthographicCamera = null
+    let mutable asteroids1: AsteroidShowerSystem = Unchecked.defaultof<AsteroidShowerSystem>
+    let mutable asteroidsRenderSystem: AsteroidRenderSystem = Unchecked.defaultof<AsteroidRenderSystem>
+    let mutable bullets1: BulletSystem = Unchecked.defaultof<BulletSystem>
+    let mutable boids1: BoidsSystem = Unchecked.defaultof<BoidsSystem>
 
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
 
@@ -71,7 +60,7 @@ type DanmakuGame(game: Game) =
             // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
             new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
 
-        this.camera <- OrthographicCamera(viewportAdapter)
+        camera <- OrthographicCamera(viewportAdapter)
 
 
         let easingFn = EasingFunctions.QuadraticIn
@@ -99,9 +88,9 @@ type DanmakuGame(game: Game) =
             // FIXME: something is still wrong with the movement, not fully responsive
             match args.Key with 
             | Keys.Space ->
-                this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
+                asteroidsRenderSystem.AlwaysShow <- not asteroidsRenderSystem.AlwaysShow
             | Keys.Z ->
-                this.bullets1.Firing <- true
+                bullets1.Firing <- true
             | Keys.W | Keys.I ->
                 // player.SetVelocity(Vector2.UnitY * -playerSpeed)
                 player.CurrentVelocity <- Vector2.UnitY * -playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
@@ -127,7 +116,7 @@ type DanmakuGame(game: Game) =
             // | Keys.Space ->
                 // this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
             | Keys.Z ->
-                this.bullets1.Firing <- false
+                bullets1.Firing <- false
             | Keys.W | Keys.I ->
                 if( player.CurrentVelocity.Y < 0f) then
                     player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
@@ -149,36 +138,36 @@ type DanmakuGame(game: Game) =
     override this.LoadContent() =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
 
-        this.dot <- this.Content.Load "1px"
+        dot <- this.Content.Load "1px"
 
 
-        this.asteroids1 <- new AsteroidShowerSystem(EllipseF(bubble.Center, 300f, 200f))
-        this.asteroids1.Bubble <- bubble
+        asteroids1 <- new AsteroidShowerSystem(EllipseF(bubble.Center, 300f, 200f))
+        asteroids1.Bubble <- bubble
 
-        this.asteroidsRenderSystem <- new AsteroidRenderSystem(this.GraphicsDevice, this.camera)
+        asteroidsRenderSystem <- new AsteroidRenderSystem(this.GraphicsDevice, camera)
 
-        this.boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center, 300f, 450f))
-        this.boids1.Target <- boidsTarget
+        boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center, 300f, 450f))
+        boids1.Target <- boidsTarget
 
-        this.bullets1 <- new BulletSystem(player.Transform,playerBoundaries)
+        bullets1 <- new BulletSystem(player.Transform,playerBoundaries)
 
         // TODO
-        this.bullets1.Target <- bulletTarget//CircleF(Vector2(300f, 200f), 1f)
+        bullets1.Target <- bulletTarget//CircleF(Vector2(300f, 200f), 1f)
 
         let world =
             WorldBuilder()
                 
-                .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, this.camera))
+                .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, camera))
 
-                .AddSystem(this.asteroids1)
+                .AddSystem(asteroids1)
                 .AddSystem(new AsteroidExpirySystem())
-                .AddSystem(this.asteroidsRenderSystem)
+                .AddSystem(asteroidsRenderSystem)
 
-                .AddSystem(this.boids1)
-                .AddSystem(new BoidsRenderSystem(this.GraphicsDevice, this.camera))
+                .AddSystem(boids1)
+                .AddSystem(new BoidsRenderSystem(this.GraphicsDevice, camera))
 
-                .AddSystem(this.bullets1)
-                .AddSystem(new BulletRenderSystem(this.GraphicsDevice, this.camera))
+                .AddSystem(bullets1)
+                .AddSystem(new BulletRenderSystem(this.GraphicsDevice, camera))
 
                 .Build()
 
@@ -200,8 +189,8 @@ type DanmakuGame(game: Game) =
         tweener.Update dt
 
         asteroidAngle <- (asteroidAngle + dt * 0.15f) % MathF.Tau
-        this.asteroids1.SpawnAngle <- asteroidAngle
-        this.boids1.SpawnAngle <- MathF.Tau - asteroidAngle
+        asteroids1.SpawnAngle <- asteroidAngle
+        boids1.SpawnAngle <- MathF.Tau - asteroidAngle
 
         player.Update gameTime
         player.ConstrainToFrame playerBoundaries
@@ -212,18 +201,18 @@ type DanmakuGame(game: Game) =
     override this.Draw(gameTime) =
         this.GraphicsDevice.Clear Color.PaleVioletRed
 
-        spriteBatch.Begin(transformMatrix = this.camera.GetViewMatrix())
+        spriteBatch.Begin(transformMatrix = camera.GetViewMatrix())
 
         spriteBatch.DrawEllipse(bubble.Center, Vector2(bubble.RadiusX, bubble.RadiusY), 32, Color.Azure)
 
-        let pointOnBoundary = this.asteroids1.PointOnBoundary
+        let pointOnBoundary = asteroids1.PointOnBoundary
         
         spriteBatch.DrawCircle(pointOnBoundary, 5f, 12, Color.Black)
-        let rect = this.asteroids1.SpawnRange()
-        let topleft =(Vector2(rect.TopLeft.X, rect.TopLeft.Y)).Rotate(this.asteroids1.SpawnAngle) + pointOnBoundary
-        let topright=(Vector2(rect.TopRight.X, rect.TopRight.Y)).Rotate(this.asteroids1.SpawnAngle)  + pointOnBoundary
-        let bottomleft =(Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(this.asteroids1.SpawnAngle) + pointOnBoundary
-        let bottomright =(Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(this.asteroids1.SpawnAngle) + pointOnBoundary
+        let rect = asteroids1.SpawnRange()
+        let topleft =(Vector2(rect.TopLeft.X, rect.TopLeft.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
+        let topright=(Vector2(rect.TopRight.X, rect.TopRight.Y)).Rotate(asteroids1.SpawnAngle)  + pointOnBoundary
+        let bottomleft =(Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
+        let bottomright =(Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
 
         spriteBatch.DrawLine(topleft, topright, Color.Brown)
         spriteBatch.DrawLine(topleft, bottomleft, Color.Brown)
