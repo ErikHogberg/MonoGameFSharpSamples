@@ -22,7 +22,6 @@ open Asteroids
 open Boids
 open Tools
 open RenderSystem
-open UpdateSystem
 open Danmaku
 open SpaceTactics
 open DebugScene
