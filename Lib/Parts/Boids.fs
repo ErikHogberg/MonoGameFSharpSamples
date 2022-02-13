@@ -169,8 +169,15 @@ type BoidsSystem (boundaries: EllipseF) =
                 let mutable closestDistanceSqr = (closestNearby.Bounds.Position.ToVector() - transform.Position).LengthSquared()
 
                 // find closest neighbor
+
+                let mutable averageNearbyFacing = Vector2.Zero
+
                 for i in 1..(nearby.Count-1) do
                     let otherBoid = nearby[i]
+                    let otherBoidData = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
+
+                    averageNearbyFacing <- averageNearbyFacing + otherBoidData.Velocity
+
 
                     let otherDelta = otherBoid.Bounds.Position.ToVector() - transform.Position
                     let otherDistanceSqr = otherDelta.LengthSquared()
@@ -181,6 +188,8 @@ type BoidsSystem (boundaries: EllipseF) =
                         ()
 
                     ()
+
+                averageNearbyFacing <- averageNearbyFacing / (float32 nearby.Count)
 
                 // TODO: use average facing instead of facing of closest, where applicable
             
@@ -195,8 +204,9 @@ type BoidsSystem (boundaries: EllipseF) =
                         ()
                     else
                         // alignment                
-                        let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
-                        boid.Velocity <- boid.Velocity.MoveTowards(otherBoid.Velocity, (alignmentSpeed*dt))
+                        // let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
+                        // boid.Velocity <- boid.Velocity.MoveTowards(otherBoid.Velocity, (alignmentSpeed*dt))
+                        boid.Velocity <- boid.Velocity.FasterRotateTowards averageNearbyFacing (alignmentSpeed*dt)
 
                         ()
                     ()
@@ -204,7 +214,7 @@ type BoidsSystem (boundaries: EllipseF) =
                     // cohesion
                     let velocityMagnitude = boid.Velocity.Length()
                     let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
-                    let dir = boid.Velocity.NormalizedCopy().FasterRotateTowards (otherBoid.Velocity.NormalizedCopy()) (cohesionSteerSpeed*dt)
+                    let dir = boid.Velocity.FasterRotateTowards (otherBoid.Velocity) (cohesionSteerSpeed*dt)
                     boid.Velocity <- dir*velocityMagnitude
                         
                     ()
