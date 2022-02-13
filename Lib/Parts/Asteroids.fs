@@ -230,6 +230,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
 
         ()
 
+// Asteroids have their own draw system due to the hiding outside of boundary feature
 type AsteroidRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
     inherit EntityDrawSystem(Aspect.All(typedefof<Transform2>, typedefof<Asteroid>))
 

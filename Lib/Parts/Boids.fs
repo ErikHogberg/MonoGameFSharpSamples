@@ -24,17 +24,17 @@ type Boid(velocity: Vector2, size: float32, timeRemaining: float32) =
 
     // current velocity
     let mutable velocity = velocity
+    
     // size of boid, only used for rendering
-    let mutable size = size
-
+    // let mutable size = size
 
     member this.Velocity
         with get () = velocity
         and set (value) = velocity <- value
 
-    member this.Size
-        with get () = size
-        and set (value) = size <- value
+    // member this.Size
+    //     with get () = size
+    //     and set (value) = size <- value
 
     member this.TimeRemaining
         with get () = timeRemaining
@@ -141,6 +141,7 @@ type BoidsSystem (boundaries: EllipseF) =
         let boid = Boid(velocity, size, random.NextSingle(20f, 30f))
         entity.Attach(transform)
         entity.Attach(boid)
+        entity.Attach(RenderSystem.Dot(size, Color.Orange))
         spawnCount <- spawnCount + 1
         entity.Id
 
@@ -278,42 +279,4 @@ type BoidsSystem (boundaries: EllipseF) =
         member this.CheckCollision other =
             (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other )
 
-// rendering system
-type BoidsRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
-    inherit EntityDrawSystem(Aspect.All(typedefof<Transform2>, typedefof<Boid>))
 
-    let graphicsDevice = graphicsDevice
-
-    // reference to shared camera view, such as player camera
-    let camera = camera
-
-    // the boids have their own sprite batch
-    let spriteBatch = new SpriteBatch(graphicsDevice)
-
-    let mutable transformMapper: ComponentMapper<Transform2> = null
-    let mutable boidMapper: ComponentMapper<Boid> = null
-
-
-    override this.Initialize(mapperService: IComponentMapperService) =
-        transformMapper <- mapperService.GetMapper<Transform2>()
-        boidMapper <- mapperService.GetMapper<Boid>()
-        ()
-
-    override this.Draw(gameTime: GameTime) =
-        // let dt = gameTime.GetElapsedSeconds()
-
-        // set the sprite batch view to match the position of the camera
-        let transformMatrix = camera.GetViewMatrix()
-        spriteBatch.Begin(samplerState = SamplerState.PointClamp, transformMatrix = transformMatrix)
-
-        for entity in this.ActiveEntities do
-            let transform = transformMapper.Get(entity)
-            let boid = boidMapper.Get(entity)
-
-            // only draw boids if they have entered the boundary
-            spriteBatch.FillRectangle(transform.Position, Size2(boid.Size, boid.Size), Color.Orange)
-
-            ()
-
-        spriteBatch.End()
-        ()

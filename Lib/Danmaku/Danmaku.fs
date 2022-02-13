@@ -166,7 +166,7 @@ type DanmakuGame (game) =
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, camera))
 
                 .AddSystem(boids1)
-                .AddSystem(new BoidsRenderSystem(this.GraphicsDevice, camera))
+                // .AddSystem(new BoidsRenderSystem(this.GraphicsDevice, camera))
 
                 .AddSystem(bullets1)
                 .AddSystem(new EnemyBulletSystem(Transform2(300f,150f,0f,0f,0f), playerBoundaries))

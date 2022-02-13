@@ -17,7 +17,6 @@ open MonoGame.Extended.Screens.Transitions
 open MonoGame.Extended.Tweening
 
 open RenderSystem
-open UpdateSystem
 open GameScreenWithComponents
 open Asteroids
 
