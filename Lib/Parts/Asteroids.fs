@@ -237,11 +237,8 @@ type AsteroidRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCa
     let camera = camera
     let spriteBatch = new SpriteBatch(graphicsDevice)
 
-    [<DefaultValue>]
-    val mutable transformMapper: ComponentMapper<Transform2>
-
-    [<DefaultValue>]
-    val mutable asteroidMapper: ComponentMapper<Asteroid>
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable asteroidMapper: ComponentMapper<Asteroid> = null
 
 
     let mutable alwaysShow = true
@@ -251,8 +248,8 @@ type AsteroidRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCa
 
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.asteroidMapper <- mapperService.GetMapper<Asteroid>()
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        asteroidMapper <- mapperService.GetMapper<Asteroid>()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -263,8 +260,8 @@ type AsteroidRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCa
         spriteBatch.Begin(samplerState = SamplerState.PointClamp, transformMatrix = transformMatrix)
 
         for entity in this.ActiveEntities do
-            let transform = this.transformMapper.Get(entity)
-            let asteroid = this.asteroidMapper.Get(entity)
+            let transform = transformMapper.Get(entity)
+            let asteroid = asteroidMapper.Get(entity)
 
             // only draw asteroids if they have entered the boundary
             if alwaysShow || asteroid.Entered then

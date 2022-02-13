@@ -11,8 +11,10 @@ open MonoGame.Extended.Entities.Systems
 open MonoGame.Extended.Collisions
 
 open Tools
+open RenderSystem
 
 open type System.MathF
+
 
 
 type Bullet(velocity: Vector2, size: float32) =
@@ -34,10 +36,15 @@ type Bullet(velocity: Vector2, size: float32) =
         with get () = entered
         and set (value) = entered <- value
 
+type PlayerBullet(velocity: Vector2, size: float32, homing: bool) =
+    inherit Bullet (velocity, size)
+
+    member this.Homing = homing
+
 
 // updating and spawning system
-type BulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
-    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<Bullet>))
+type PlayerBulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
+    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<PlayerBullet>))
 
 
     let collisionTreeBounds = RectangleF (0f,0f, 1500f, 1500f)
@@ -48,7 +55,7 @@ type BulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
     // mappers for accessing components
 
     let mutable transformMapper: ComponentMapper<Transform2> = null
-    let mutable bulletMapper: ComponentMapper<Bullet> = null
+    let mutable bulletMapper: ComponentMapper<PlayerBullet> = null
 
     // homing target of bullets, pull force magnitude corresponds to radius
     let mutable target = CircleF(Vector2.One, 1f)
@@ -75,17 +82,18 @@ type BulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
 
     //
 
-    member this.CreateBullet (position: Vector2) velocity size =
+    member this.CreateBullet (position: Vector2) velocity size homing =
         let entity = this.CreateEntity()
         let transform = Transform2(position)
-        let bullet = Bullet(velocity, size)
+        let bullet = PlayerBullet(velocity, size, homing)
         entity.Attach transform
         entity.Attach bullet
+        entity.Attach (Dot(Size2(size,size), Color.Black))
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
         transformMapper <- mapperService.GetMapper<Transform2>()
-        bulletMapper <- mapperService.GetMapper<Bullet>()
+        bulletMapper <- mapperService.GetMapper<PlayerBullet>()
         ()
 
     override this.Update(gameTime: GameTime) =
@@ -113,8 +121,9 @@ type BulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
 
                 // pull velocity towards gravity target
                 // boid.Velocity <- boid.Velocity + Vector2.Normalize(target.Position - transform.Position) * target.Radius * targetSteerMul
-                
-                bullet.Velocity <- bullet.Velocity.FasterRotateTowards(target.Center.ToVector() - transform.Position) (target.Radius*targetSteerMul)
+
+                if bullet.Homing then                
+                    bullet.Velocity <- bullet.Velocity.FasterRotateTowards(target.Center.ToVector() - transform.Position) (target.Radius*targetSteerMul)
 
                 // move bullet
                 transform.Position <- transform.Position + bullet.Velocity * spawnVelocity * dt
@@ -141,7 +150,107 @@ type BulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
             firingTimer <- firingDelay
 
             let id =
-                this.CreateBullet spawnerTransform.Position (Vector2.UnitY * -spawnVelocity) (random.NextSingle(2f, 4f))
+                this.CreateBullet spawnerTransform.Position (Vector2.UnitY * -spawnVelocity) (random.NextSingle(2f, 4f)) true
+            ()
+        ()
+
+    interface ICollidable with
+        member this.CheckCollision other =
+            (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other )
+
+type EnemyBullet(velocity: Vector2, size: float32) =
+    inherit Bullet (velocity, size)
+
+
+// updating and spawning system
+type EnemyBulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
+    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<EnemyBullet>))
+
+
+    let collisionTreeBounds = RectangleF (0f,0f, 1500f, 1500f)
+    let mutable collisionTree = Quadtree collisionTreeBounds
+
+    let random = new FastRandom()
+
+    // mappers for accessing components
+
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable bulletMapper: ComponentMapper<EnemyBullet> = null
+
+
+    let firingDelay= 1f/10f
+    let spawnVelocity = 10f
+
+    let spawnerTransform = spawnerTransform
+
+    let mutable firingTimer = 0f;
+
+
+    member this.CreateBullet (position: Vector2) velocity size =
+        let entity = this.CreateEntity()
+        let transform = Transform2(position)
+        let bullet = EnemyBullet(velocity, size)
+        entity.Attach transform
+        entity.Attach bullet
+        entity.Attach (Dot(Size2(size,size), Color.Cyan))
+        entity.Id
+
+    override this.Initialize(mapperService: IComponentMapperService) =
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        bulletMapper <- mapperService.GetMapper<EnemyBullet>()
+        ()
+
+    override this.Update(gameTime: GameTime) =
+        let dt = gameTime.GetElapsedSeconds()
+
+        // quadtree that will be used next update
+        let nextCollisionTree = Quadtree collisionTreeBounds
+        
+        for entityId in this.ActiveEntities do
+            let transform = transformMapper.Get(entityId)
+            let bullet = bulletMapper.Get(entityId)
+
+            // check if asteroid is inside the render boundary
+            let inBoundary = boundaries.Contains(transform.Position)
+
+            // mark asteroid as having entered boundary
+            // if inBoundary then
+            //     bullet.Entered <- true
+
+            if bullet.Entered && (not inBoundary) then
+                this.DestroyEntity(entityId)
+            else
+                if inBoundary then
+                    bullet.Entered <- true
+
+                // move bullet
+                transform.Position <- transform.Position + bullet.Velocity * spawnVelocity * dt
+
+                nextCollisionTree.Insert (QuadtreeData(Tools.TransformCollisionActor(transform, bullet.Size, (fun _ -> ()), bullet)))
+                ()
+
+            ()
+
+        // removes unneccesary leaf nodes and simplifies the new quad tree
+        nextCollisionTree.Shake()
+        // replace the old quadtree with the new one in preparation for the next update
+        collisionTree <- nextCollisionTree
+
+
+        // spawning new entities
+
+        // TODO: make enemies spawn enemy bullets instead of the enemy bullet updater
+
+        // count down firing delay timer
+        if firingTimer > 0f then
+            firingTimer <- firingTimer - dt
+
+        if firingTimer <= 0f then
+
+            firingTimer <- firingDelay
+
+            let id =
+                this.CreateBullet spawnerTransform.Position (Vector2.UnitY * spawnVelocity) (random.NextSingle(2f, 4f))
             ()
         ()
 
@@ -151,7 +260,8 @@ type BulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
 
 // rendering system
 type BulletRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
-    inherit EntityDrawSystem(Aspect.All(typedefof<Transform2>, typedefof<Bullet>))
+    inherit EntityDrawSystem(Aspect.All(typedefof<Transform2>, typedefof<PlayerBullet>))
+    // inherit EntityDrawSystem(Aspect.All(typedefof<Transform2>).One(typedefof<PlayerBullet>,typedefof<EnemyBullet>))
 
     let graphicsDevice = graphicsDevice
 
@@ -162,12 +272,12 @@ type BulletRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCame
     let spriteBatch = new SpriteBatch(graphicsDevice)
 
     let mutable transformMapper: ComponentMapper<Transform2> = null
-    let mutable bulletMapper: ComponentMapper<Bullet> = null
+    let mutable bulletMapper: ComponentMapper<PlayerBullet> = null
 
 
     override this.Initialize(mapperService: IComponentMapperService) =
         transformMapper <- mapperService.GetMapper<Transform2>()
-        bulletMapper <- mapperService.GetMapper<Bullet>()
+        bulletMapper <- mapperService.GetMapper<PlayerBullet>()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -179,10 +289,10 @@ type BulletRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCame
 
         for entity in this.ActiveEntities do
             let transform = transformMapper.Get(entity)
-            let boid = bulletMapper.Get(entity)
+            let bullet = bulletMapper.Get(entity)
 
             // only draw boids if they have entered the boundary
-            spriteBatch.FillRectangle(transform.Position, Size2(boid.Size, boid.Size), Color.Black)
+            spriteBatch.FillRectangle(transform.Position, Size2(bullet.Size, bullet.Size), Color.Black)
 
             ()
 

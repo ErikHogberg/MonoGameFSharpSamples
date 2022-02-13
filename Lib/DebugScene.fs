@@ -122,6 +122,8 @@ type DebugScene(game: Game) =
         spriteBatch.DrawString(firaCode, $"ln: {fastLength} (fast)", Vector2(100f, 300f), Color.Black);
         spriteBatch.DrawString(firaCode, $"ln: {length}", Vector2(100f, 320f), Color.Black);
 
+        spriteBatch.DrawString(firaCode, "Debug Scene", Vector2(600f, 100f), Color.Black);
+
         spriteBatch.End()
 
         base.Draw gameTime

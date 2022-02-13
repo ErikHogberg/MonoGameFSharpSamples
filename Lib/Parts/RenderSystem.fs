@@ -49,15 +49,12 @@ type EllipseRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCam
     let camera = camera
     let spriteBatch = new SpriteBatch(graphicsDevice)
 
-    [<DefaultValue>]
-    val mutable transformMapper: ComponentMapper<Transform2>
-
-    [<DefaultValue>]
-    val mutable spriteMapper: ComponentMapper<EllipseF>
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable ellipseMapper: ComponentMapper<EllipseF> = null
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        this.transformMapper <- mapperService.GetMapper<Transform2>()
-        this.spriteMapper <- mapperService.GetMapper<EllipseF>()
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        ellipseMapper <- mapperService.GetMapper<EllipseF>()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -66,11 +63,53 @@ type EllipseRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCam
         spriteBatch.Begin(transformMatrix = transformMatrix)
 
         for entityId in this.ActiveEntities do
-            let transform = this.transformMapper.Get entityId
-            let sprite = this.spriteMapper.Get entityId
+            let transform = transformMapper.Get entityId
+            let sprite = ellipseMapper.Get entityId
             // spriteBatch.Draw(sprite, transform)
             // TODO: apply transform
             spriteBatch.DrawEllipse(sprite.Center, Vector2( sprite.RadiusX, sprite.RadiusY),16, Color.Gold)
+            ()
+
+        spriteBatch.End()
+        ()
+
+type Dot (size: Size2, color: Color) =
+
+    new (size:float32, color:Color) =
+        Dot (Size2(size,size), color)
+
+    member this.Size = size
+    member this.Color = color
+
+type DotRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
+    inherit EntityDrawSystem(Aspect
+        .All(typedefof<Transform2>, typedefof<Dot>)
+        )
+
+    let graphicsDevice = graphicsDevice
+    let camera = camera
+    let spriteBatch = new SpriteBatch(graphicsDevice)
+
+    let mutable transformMapper: ComponentMapper<Transform2> = null
+    let mutable dotMapper: ComponentMapper<Dot> = null
+
+    override this.Initialize(mapperService: IComponentMapperService) =
+        transformMapper <- mapperService.GetMapper<Transform2>()
+        dotMapper <- mapperService.GetMapper<Dot>()
+        ()
+
+    override this.Draw(gameTime: GameTime) =
+        let transformMatrix = camera.GetViewMatrix()
+
+        spriteBatch.Begin(transformMatrix = transformMatrix)
+
+        for entityId in this.ActiveEntities do
+            let transform = transformMapper.Get entityId
+            let dot = dotMapper.Get entityId
+            // spriteBatch.Draw(sprite, transform)
+            // TODO: apply transform
+            // spriteBatch.DrawEllipse(sprite.Center, Vector2( sprite.RadiusX, sprite.RadiusY),16, Color.Gold)
+            spriteBatch.FillRectangle(transform.Position, dot.Size, dot.Color)
             ()
 
         spriteBatch.End()

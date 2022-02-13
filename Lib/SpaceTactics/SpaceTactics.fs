@@ -25,6 +25,7 @@ type SpaceGame(game: Game) =
     inherit GameScreenWithComponents(game)
 
     let mutable dot: Texture2D = null
+    let mutable fira: SpriteFont = null
     let mutable camera: OrthographicCamera = null
     let mutable asteroids1: AsteroidShowerSystem = Unchecked.defaultof<AsteroidShowerSystem>
     let mutable asteroidsRenderSystem: AsteroidRenderSystem = Unchecked.defaultof<AsteroidRenderSystem>
@@ -77,6 +78,7 @@ type SpaceGame(game: Game) =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
 
         dot <- this.Content.Load "1px"
+        fira <- this.Content.Load "Fira Code"
 
         asteroids1 <- new AsteroidShowerSystem(EllipseF(bubble.Center, 300f, 200f))
         asteroids1.Bubble <- bubble
@@ -138,6 +140,8 @@ type SpaceGame(game: Game) =
         spriteBatch.DrawLine(topleft, bottomleft, Color.Brown)
         spriteBatch.DrawLine(bottomright, topright, Color.Brown)
         spriteBatch.DrawLine(bottomright, bottomleft, Color.Brown)
+
+        spriteBatch.DrawString(fira, "Space Game", Vector2(600f, 100f), Color.WhiteSmoke);
 
         spriteBatch.End()
 

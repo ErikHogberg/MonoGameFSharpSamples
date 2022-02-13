@@ -26,10 +26,10 @@ type DanmakuGame (game) =
     inherit GameScreenWithComponents (game)
 
     let mutable dot: Texture2D = null
+    let mutable fira: SpriteFont = null
+
     let mutable camera: OrthographicCamera = null
-    let mutable asteroids1: AsteroidShowerSystem = Unchecked.defaultof<AsteroidShowerSystem>
-    let mutable asteroidsRenderSystem: AsteroidRenderSystem = Unchecked.defaultof<AsteroidRenderSystem>
-    let mutable bullets1: BulletSystem = Unchecked.defaultof<BulletSystem>
+    let mutable bullets1: PlayerBulletSystem = Unchecked.defaultof<PlayerBulletSystem>
     let mutable boids1: BoidsSystem = Unchecked.defaultof<BoidsSystem>
 
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
@@ -42,7 +42,7 @@ type DanmakuGame (game) =
     let bubble = EllipseF(Vector2(600f, 400f), 50f,80f) 
     let bulletTarget = CircleF(Vector2(400f, 200f), 1f)
 
-    let boidsTarget = CircleF(Vector2(1300f, 600f), 0.2f)
+    let boidsTarget = CircleF(Vector2(1300f, 600f), 10f)
 
     let mutable asteroidAngle = 0f
 
@@ -68,12 +68,6 @@ type DanmakuGame (game) =
 
 
         let easingFn = EasingFunctions.QuadraticIn
-
-        let tween = 
-            tweener.TweenTo(bubble, (fun bubble -> bubble.RadiusX), 100f, 1f, 1f)
-                .RepeatForever(0.5f)
-                .AutoReverse()
-                .Easing(easingFn)
         
         // TODO: tween move bullet target left and right to test homing
         // let tween2 = 
@@ -90,8 +84,6 @@ type DanmakuGame (game) =
         kbdListener.KeyPressed.Add(fun args  ->
 
             match args.Key with 
-            | Keys.Space ->
-                asteroidsRenderSystem.AlwaysShow <- not asteroidsRenderSystem.AlwaysShow
             | Keys.Z ->
                 bullets1.Firing <- true
             | Keys.W | Keys.I ->
@@ -115,13 +107,8 @@ type DanmakuGame (game) =
             ())
 
         kbdListener.KeyReleased.Add(fun args ->
-            // if args.Key = Keys.Z then
-            //     this.bullets1.Firing <- false
-            //     ()
 
             match args.Key with 
-            // | Keys.Space ->
-                // this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
             | Keys.Z ->
                 bullets1.Firing <- false
             | Keys.W | Keys.I ->
@@ -163,17 +150,12 @@ type DanmakuGame (game) =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
 
         dot <- this.Content.Load "1px"
-
-
-        asteroids1 <- new AsteroidShowerSystem(EllipseF(bubble.Center, 300f, 200f))
-        asteroids1.Bubble <- bubble
-
-        asteroidsRenderSystem <- new AsteroidRenderSystem(this.GraphicsDevice, camera)
+        fira <- this.Content.Load "Fira Code"
 
         boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center, 300f, 450f))
         boids1.Target <- boidsTarget
 
-        bullets1 <- new BulletSystem(player.Transform,playerBoundaries)
+        bullets1 <- new PlayerBulletSystem(player.Transform,playerBoundaries)
 
         // TODO
         bullets1.Target <- bulletTarget//CircleF(Vector2(300f, 200f), 1f)
@@ -183,25 +165,18 @@ type DanmakuGame (game) =
                 
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, camera))
 
-                .AddSystem(asteroids1)
-                .AddSystem(new AsteroidExpirySystem())
-                .AddSystem(asteroidsRenderSystem)
-
                 .AddSystem(boids1)
                 .AddSystem(new BoidsRenderSystem(this.GraphicsDevice, camera))
 
                 .AddSystem(bullets1)
-                .AddSystem(new BulletRenderSystem(this.GraphicsDevice, camera))
+                .AddSystem(new EnemyBulletSystem(Transform2(300f,150f,0f,0f,0f), playerBoundaries))
+                // .AddSystem(new BulletRenderSystem(this.GraphicsDevice, camera))
+                .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
 
                 .Build()
 
         this.Components.Add(world)
 
-        // let testEntity = world.CreateEntity()
-        // testEntity.Attach(Transform2(100f, 300f, 0f, 100f, 100f))
-        // let mutable dotSprite = Sprite(this.dot)
-        // dotSprite.Color <- Color.Goldenrod
-        // testEntity.Attach(dotSprite)
 
         base.LoadContent()
         ()
@@ -213,8 +188,7 @@ type DanmakuGame (game) =
         tweener.Update dt
 
         asteroidAngle <- (asteroidAngle + dt * 0.15f) % MathF.Tau
-        asteroids1.SpawnAngle <- asteroidAngle
-        boids1.SpawnAngle <- MathF.Tau - asteroidAngle
+        boids1.SpawnAngle <-  asteroidAngle
 
         player.Update gameTime
         player.ConstrainToFrame playerBoundaries
@@ -227,16 +201,16 @@ type DanmakuGame (game) =
 
         spriteBatch.Begin(transformMatrix = camera.GetViewMatrix())
 
-        spriteBatch.DrawEllipse(bubble.Center, Vector2(bubble.RadiusX, bubble.RadiusY), 32, Color.Azure)
+        spriteBatch.DrawCircle(boidsTarget, 12, Color.Chartreuse, 5f)
 
-        let pointOnBoundary = asteroids1.PointOnBoundary
+        let pointOnBoundary = boids1.PointOnBoundary
         
         spriteBatch.DrawCircle(pointOnBoundary, 5f, 12, Color.Black)
-        let rect = asteroids1.SpawnRange()
-        let topleft =(Vector2(rect.TopLeft.X, rect.TopLeft.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
-        let topright=(Vector2(rect.TopRight.X, rect.TopRight.Y)).Rotate(asteroids1.SpawnAngle)  + pointOnBoundary
-        let bottomleft =(Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
-        let bottomright =(Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
+        let rect = boids1.SpawnRange()
+        let topleft = (Vector2(rect.TopLeft.X, rect.TopLeft.Y)).Rotate(boids1.SpawnAngle) + pointOnBoundary
+        let topright= (Vector2(rect.TopRight.X, rect.TopRight.Y)).Rotate(boids1.SpawnAngle)  + pointOnBoundary
+        let bottomleft = (Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(boids1.SpawnAngle) + pointOnBoundary
+        let bottomright = (Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(boids1.SpawnAngle) + pointOnBoundary
 
         spriteBatch.DrawLine(topleft, topright, Color.Brown)
         spriteBatch.DrawLine(topleft, bottomleft, Color.Brown)
@@ -244,9 +218,10 @@ type DanmakuGame (game) =
         spriteBatch.DrawLine(bottomright, bottomleft, Color.Brown)
 
 
-        spriteBatch.DrawCircle(boidsTarget, 12, Color.Chartreuse)
-
         player.Draw spriteBatch gameTime
+
+
+        spriteBatch.DrawString(fira, "Danmaku", Vector2(600f, 100f), Color.WhiteSmoke);
 
         spriteBatch.End()
 

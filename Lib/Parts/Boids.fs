@@ -94,7 +94,7 @@ type BoidsSystem (boundaries: EllipseF) =
     let alignmentSpeed = 2f
 
     // multiplier on gravity target radius
-    let targetSteerMul = 2f
+    let targetSteerMul = 0.1f
 
     // define target flocking distance range
     let maxDistanceSqr = 30f
@@ -129,7 +129,9 @@ type BoidsSystem (boundaries: EllipseF) =
             ).Rotate(spawnAngle)
 
     member this.SpawnRange () = 
-        RectangleF(spawnOffsetRange, (spawnOffsetRange * 2f).ToSize())
+        let center = Point2(-spawnOffsetRange.X, -spawnOffsetRange.Y)
+        RectangleF(center , (spawnOffsetRange * 2f).ToSize())    
+        // RectangleF(spawnOffsetRange, (spawnOffsetRange * 2f).ToSize())
 
     //
 
