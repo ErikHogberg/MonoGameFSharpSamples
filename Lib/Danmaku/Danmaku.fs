@@ -59,22 +59,16 @@ type DanmakuGame (game) =
     
     override this.Initialize() =
         
-        
+        // FIXME: stretched on launch until resize        
         let viewportAdapter =
             // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
-            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
+            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1080, 1920)
 
         camera <- OrthographicCamera(viewportAdapter)
 
 
         let easingFn = EasingFunctions.QuadraticIn
         
-        // TODO: tween move bullet target left and right to test homing
-        // let tween2 = 
-        //     tweener.TweenTo(bulletTarget, (fun bulletTarget -> bulletTarget.Center.X), 100f, 1f, 1f)
-        //         .RepeatForever(0.5f)
-        //         .AutoReverse()
-        //         .Easing(easingFn)
 
         let listenerComponent =
             new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
@@ -200,6 +194,8 @@ type DanmakuGame (game) =
         this.GraphicsDevice.Clear Color.PaleVioletRed
 
         spriteBatch.Begin(transformMatrix = camera.GetViewMatrix())
+
+        spriteBatch.FillRectangle(0f,0f,1080f,1920f, Color.DarkCyan)
 
         spriteBatch.DrawCircle(boidsTarget, 12, Color.Chartreuse, 5f)
 
