@@ -170,7 +170,6 @@ type DanmakuGame (game) =
 
                 .AddSystem(bullets1)
                 .AddSystem(new EnemyBulletSystem(Transform2(300f,150f,0f,0f,0f), playerBoundaries))
-                // .AddSystem(new BulletRenderSystem(this.GraphicsDevice, camera))
                 .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
 
                 .Build()
@@ -212,11 +211,11 @@ type DanmakuGame (game) =
         let bottomleft = (Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(boids1.SpawnAngle) + pointOnBoundary
         let bottomright = (Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(boids1.SpawnAngle) + pointOnBoundary
 
-        spriteBatch.DrawLine(topleft, topright, Color.Brown)
-        spriteBatch.DrawLine(topleft, bottomleft, Color.Brown)
-        spriteBatch.DrawLine(bottomright, topright, Color.Brown)
-        spriteBatch.DrawLine(bottomright, bottomleft, Color.Brown)
-
+        let thickness = 0.3f
+        spriteBatch.DrawLine(topleft, topright, Color.Brown, thickness)
+        spriteBatch.DrawLine(topleft, bottomleft, Color.Brown, thickness)
+        spriteBatch.DrawLine(bottomright, topright, Color.Brown, thickness)
+        spriteBatch.DrawLine(bottomright, bottomleft, Color.Brown, thickness)
 
         player.Draw spriteBatch gameTime
 

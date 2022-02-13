@@ -91,10 +91,10 @@ type BoidsSystem (boundaries: EllipseF) =
     // boid flocking settings
     let separationSteerSpeed = 2f
     let cohesionSteerSpeed = 2f
-    let alignmentSpeed = 2f
+    let alignmentSteerSpeed = 2f
 
     // multiplier on gravity target radius
-    let targetSteerMul = 0.1f
+    let targetSteerMul = 0.06f
 
     // define target flocking distance range
     let maxDistanceSqr = 30f
@@ -165,61 +165,60 @@ type BoidsSystem (boundaries: EllipseF) =
 
             if nearby.Count > 0 then
 
-                let mutable closestNearby = nearby[0]
-                let mutable closestDistanceSqr = (closestNearby.Bounds.Position.ToVector() - transform.Position).LengthSquared()
+                // let mutable closestNearby = nearby[0]
+                // let mutable closestDistanceSqr = (closestNearby.Bounds.Position.ToVector() - transform.Position).LengthSquared()
 
                 // find closest neighbor
 
+                // average of normalized velocity directions of nearby boids
                 let mutable averageNearbyFacing = Vector2.Zero
+                // average position of nearby boids
+                let mutable averageNearbyCenter = Vector2.Zero
+                // average direction to nearby boids from current boid
+                let mutable averageNearbyDir = Vector2.Zero
 
                 for i in 1..(nearby.Count-1) do
-                    let otherBoid = nearby[i]
-                    let otherBoidData = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
+                    let otherBoidEntry = nearby[i]
+                    let otherBoidActor = (otherBoidEntry.Target :?> Tools.TransformCollisionActor)
+                    let otherBoid = otherBoidActor.Data :?> Boid
+                    let otherBoidTransform = otherBoidActor.Transform
 
-                    averageNearbyFacing <- averageNearbyFacing + otherBoidData.Velocity
-
-
-                    let otherDelta = otherBoid.Bounds.Position.ToVector() - transform.Position
-                    let otherDistanceSqr = otherDelta.LengthSquared()
-
-                    if  otherDistanceSqr < closestDistanceSqr then
-                        closestNearby <- otherBoid
-                        closestDistanceSqr <- otherDistanceSqr
-                        ()
-
+                    averageNearbyFacing <- averageNearbyFacing + otherBoid.Velocity.FastNormalizedCopy()
+                    averageNearbyCenter <- averageNearbyCenter + otherBoidTransform.Position
+                    averageNearbyDir <- averageNearbyDir + (otherBoidTransform.Position - transform.Position).FastNormalizedCopy()
+                    
                     ()
 
                 averageNearbyFacing <- averageNearbyFacing / (float32 nearby.Count)
+                averageNearbyCenter <- averageNearbyCenter / (float32 nearby.Count)
+                averageNearbyDir <- averageNearbyDir / (float32 nearby.Count)
 
-                // TODO: use average facing instead of facing of closest, where applicable
             
-                // choose which flocking behaviour to use
-                if closestDistanceSqr < maxDistanceSqr then
-                    if closestDistanceSqr < minDistanceSqr then
-                        // separation
-                        let velocityMagnitude = boid.Velocity.Length()
-                        let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
-                        let dir = boid.Velocity.NormalizedCopy().FasterRotateTowards (otherBoid.Velocity.NormalizedCopy()) (-separationSteerSpeed *dt)
-                        boid.Velocity <- dir*velocityMagnitude
-                        ()
-                    else
-                        // alignment                
-                        // let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
-                        // boid.Velocity <- boid.Velocity.MoveTowards(otherBoid.Velocity, (alignmentSpeed*dt))
-                        boid.Velocity <- boid.Velocity.FasterRotateTowards averageNearbyFacing (alignmentSpeed*dt)
 
-                        ()
-                    ()
-                else
-                    // cohesion
-                    let velocityMagnitude = boid.Velocity.Length()
-                    let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
-                    let dir = boid.Velocity.FasterRotateTowards (otherBoid.Velocity) (cohesionSteerSpeed*dt)
-                    boid.Velocity <- dir*velocityMagnitude
+                // flocking behaviour
+
+                // TODO: toggle behaviours depending on distance to nearby
+
+                // separation
+                // let velocityMagnitude = boid.Velocity.Length()
+                // let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
+                // let dir = boid.Velocity.NormalizedCopy().FasterRotateTowards (otherBoid.Velocity.NormalizedCopy()) (-separationSteerSpeed *dt)
+                // boid.Velocity <- dir*velocityMagnitude
+                boid.Velocity <- boid.Velocity.FasterRotateTowards averageNearbyDir (-separationSteerSpeed*dt)
+
+                // alignment                
+                // let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
+                // boid.Velocity <- boid.Velocity.MoveTowards(otherBoid.Velocity, (alignmentSpeed*dt))
+                boid.Velocity <- boid.Velocity.FasterRotateTowards averageNearbyFacing (alignmentSteerSpeed*dt)
+
+
+                // cohesion
+                // let velocityMagnitude = boid.Velocity.Length()
+                // let otherBoid = (closestNearby.Target :?> Tools.TransformCollisionActor).Data :?> Boid
+                // let dir = boid.Velocity.FasterRotateTowards (otherBoid.Velocity) (cohesionSteerSpeed*dt)
+                // boid.Velocity <- dir*velocityMagnitude
+                boid.Velocity <- boid.Velocity.FasterRotateTowards (averageNearbyCenter-transform.Position) (cohesionSteerSpeed*dt)
                         
-                    ()
-
-                ()
 
             // pull velocity towards gravity target
             boid.Velocity <- boid.Velocity + Vector2.Normalize(target.Position - transform.Position) * target.Radius * targetSteerMul
