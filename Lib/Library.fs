@@ -49,6 +49,11 @@ type Game1() as x =
     let mutable camera: OrthographicCamera = null
     let mutable dot: Texture2D = null
 
+    member this.OnResize (e: EventArgs) = 
+        graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width;
+        graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height;
+        graphics.ApplyChanges();
+        ()
     
     override this.Initialize() =
 
@@ -56,6 +61,7 @@ type Game1() as x =
         this.IsMouseVisible <- true
 
         this.Window.AllowUserResizing <- true
+        this.Window.ClientSizeChanged.Add this.OnResize
 
         graphics.PreferredBackBufferWidth <- 
             // 1920

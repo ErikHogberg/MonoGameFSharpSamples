@@ -68,6 +68,11 @@ type DanmakuGame (game) =
 
         camera <- OrthographicCamera(viewportAdapter)
 
+        // TODO: resize on screen change
+        // IDEA: expose camera field, resize from Game1
+        // graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width;
+        // graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height;
+        // graphics.ApplyChanges()
 
         let easingFn = EasingFunctions.QuadraticIn
         
