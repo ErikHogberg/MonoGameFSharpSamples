@@ -36,8 +36,8 @@ type Player(maxVelocity: float32, startPos: Vector2)=
         capVelocity()
 
     member this.ConstrainToFrame (frame: RectangleF) =
-        if not (frame.Contains(transform.Position)) then
-            transform.Position <- frame.ClosestPointTo(transform.Position)
+        if not (frame.Contains(transform.Position.ToPoint2())) then
+            transform.Position <- frame.ClosestPointTo(transform.Position.ToPoint2()).ToVector()
         ()
 
     member this.Update (gameTime: GameTime) =

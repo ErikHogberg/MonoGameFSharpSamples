@@ -25,4 +25,7 @@
   <ItemGroup>
     <None Include="..\Lib\Content\bin\DesktopGL\*.xnb" CopyToOutputDirectory="PreserveNewest" LinkBase="Content\" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
+  </ItemGroup>
 </Project>

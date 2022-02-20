@@ -58,7 +58,7 @@ type PlayerBulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
     let mutable bulletMapper: ComponentMapper<PlayerBullet> = null
 
     // homing target of bullets, pull force magnitude corresponds to radius
-    let mutable target = CircleF(Vector2.One, 1f)
+    let mutable target = CircleF(Point2(1f,1f), 1f)
 
     let firingDelay= 1f/10f
     let spawnVelocity = 10f
@@ -107,7 +107,7 @@ type PlayerBulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
             let bullet = bulletMapper.Get(entityId)
 
             // check if asteroid is inside the render boundary
-            let inBoundary = boundaries.Contains(transform.Position)
+            let inBoundary = boundaries.Contains(transform.Position.ToPoint2())
 
             // mark asteroid as having entered boundary
             // if inBoundary then
@@ -211,7 +211,7 @@ type EnemyBulletSystem (spawnerTransform: Transform2, boundaries: RectangleF) =
             let bullet = bulletMapper.Get(entityId)
 
             // check if asteroid is inside the render boundary
-            let inBoundary = boundaries.Contains(transform.Position)
+            let inBoundary = boundaries.Contains(transform.Position.ToPoint2())
 
             // mark asteroid as having entered boundary
             // if inBoundary then

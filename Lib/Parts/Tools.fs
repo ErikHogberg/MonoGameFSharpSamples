@@ -38,7 +38,7 @@ module Singleton =
             textures <- textures.Add(key, value)
 
         member this.Get(key: string) =
-            textures[ key ]
+            textures.[ key ]
 
 
     let Instance = Product()
@@ -47,6 +47,7 @@ type Point2 with
     member this.ToVector() = Vector2(this.X, this.Y)
 
 type Vector2 with
+    member this.ToPoint2() = Point2(this.X, this.Y)
 
     // fast approximation of normalized vector
     member this.FastNormalizedCopy () =
@@ -112,7 +113,7 @@ type TransformCollisionActor
     member this.Transform = transform
 
     interface Collisions.ICollisionActor with
-        member this.Bounds = CircleF(transform.Position, radius)
+        member this.Bounds = CircleF(Point2(transform.Position.X, transform.Position.Y), radius) :> IShapeF
         member this.OnCollision(args) = onCollision (args)
 
 // interface for collision checking support

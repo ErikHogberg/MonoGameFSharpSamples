@@ -125,7 +125,7 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
             ).Rotate(spawnAngle)
 
     member this.SpawnRange ()= 
-            let center = Vector2(0f, spawnHeightOffset) - spawnOffsetRange
+            let center = Point2(0f, spawnHeightOffset) - spawnOffsetRange
             RectangleF(center , (spawnOffsetRange * 2f).ToSize())
             
 

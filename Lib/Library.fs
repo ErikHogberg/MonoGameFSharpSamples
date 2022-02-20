@@ -43,6 +43,7 @@ type Game1() as x =
     let touchListener = TouchListener()
     let kbdListener = KeyboardListener()
 
+    // TODO: resize screen manager on window resize
     let screenManager = new ScreenManager()
 
     let mutable camera: OrthographicCamera = null

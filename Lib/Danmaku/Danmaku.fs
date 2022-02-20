@@ -21,6 +21,7 @@ open GameScreenWithComponents
 open Asteroids
 open Boids
 open Bullets
+open Tools
 
 type DanmakuGame (game) =
     inherit GameScreenWithComponents (game)
@@ -40,9 +41,9 @@ type DanmakuGame (game) =
 
     let box = RectangleF(600f, 200f, 50f,80f)
     let bubble = EllipseF(Vector2(600f, 400f), 50f,80f) 
-    let bulletTarget = CircleF(Vector2(400f, 200f), 1f)
+    let bulletTarget = CircleF(Point2(400f, 200f), 1f)
 
-    let boidsTarget = CircleF(Vector2(1300f, 600f), 10f)
+    let boidsTarget = CircleF(Point2(1300f, 600f), 10f)
 
     let mutable asteroidAngle = 0f
 
@@ -62,7 +63,8 @@ type DanmakuGame (game) =
         // FIXME: stretched on launch until resize        
         let viewportAdapter =
             // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
-            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1080, 1920)
+            // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1080, 1920)
+            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
 
         camera <- OrthographicCamera(viewportAdapter)
 
@@ -146,7 +148,7 @@ type DanmakuGame (game) =
         dot <- this.Content.Load "1px"
         fira <- this.Content.Load "Fira Code"
 
-        boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center, 300f, 450f))
+        boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center.ToVector(), 300f, 450f))
         boids1.Target <- boidsTarget
 
         bullets1 <- new PlayerBulletSystem(player.Transform,playerBoundaries)
@@ -180,7 +182,7 @@ type DanmakuGame (game) =
         // TODO: tweener component or entity?
         tweener.Update dt
 
-        asteroidAngle <- (asteroidAngle + dt * 0.15f) % MathF.Tau
+        asteroidAngle <- (asteroidAngle + dt * 0.15f) % (MathF.PI*2f)
         boids1.SpawnAngle <-  asteroidAngle
 
         player.Update gameTime

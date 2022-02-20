@@ -51,7 +51,7 @@ type SpaceGame(game: Game) =
 
         camera <- OrthographicCamera(viewportAdapter)
 
-        let easingFn = EasingFunctions.QuadraticIn
+        let easingFn =  Func<float32, float32>(EasingFunctions.QuadraticIn)
 
         let tween = 
             tweener.TweenTo(bubble, (fun bubble -> bubble.RadiusX), 100f, 1f, 1f)
@@ -113,7 +113,7 @@ type SpaceGame(game: Game) =
         // TODO: tweener component or entity?
         tweener.Update(dt)
 
-        asteroidAngle <- (asteroidAngle + dt * 0.15f) % MathF.Tau
+        asteroidAngle <- (asteroidAngle + dt * 0.15f) %  (MathF.PI*2f)
         asteroids1.SpawnAngle <- asteroidAngle
 
         base.Update gameTime

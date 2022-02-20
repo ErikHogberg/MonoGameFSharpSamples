@@ -64,7 +64,7 @@ type BoidsSystem (boundaries: EllipseF) =
     let mutable boidMapper: ComponentMapper<Boid> = null
 
     // gravity target of boids, pull force magnitude corresponds to radius
-    let mutable target = CircleF(Vector2.One, 1f)
+    let mutable target = CircleF(Point2(1f,1f), 1f)
 
     // random range for boid spawn delay
     let MinSpawnDelay = 0.0f
@@ -161,7 +161,7 @@ type BoidsSystem (boundaries: EllipseF) =
             let boid = boidMapper.Get(entityId)
 
             // get all neighbor entities in "visual" range
-            let nearby = collisionTree.Query(CircleF(transform.Position, visualRange))
+            let nearby = collisionTree.Query(CircleF(transform.Position.ToPoint2(), visualRange))
 
             if nearby.Count > 0 then
 
@@ -178,7 +178,7 @@ type BoidsSystem (boundaries: EllipseF) =
                 let mutable averageNearbyDir = Vector2.Zero
 
                 for i in 1..(nearby.Count-1) do
-                    let otherBoidEntry = nearby[i]
+                    let otherBoidEntry = nearby.[i]
                     let otherBoidActor = (otherBoidEntry.Target :?> Tools.TransformCollisionActor)
                     let otherBoid = otherBoidActor.Data :?> Boid
                     let otherBoidTransform = otherBoidActor.Transform
@@ -221,7 +221,7 @@ type BoidsSystem (boundaries: EllipseF) =
                         
 
             // pull velocity towards gravity target
-            boid.Velocity <- boid.Velocity + Vector2.Normalize(target.Position - transform.Position) * target.Radius * targetSteerMul
+            boid.Velocity <- boid.Velocity + Vector2.Normalize(target.Position.ToVector() - transform.Position) * target.Radius * targetSteerMul
 
             // cap velocity
             if boid.Velocity.LengthSquared() > velocityCap ** 2f then
