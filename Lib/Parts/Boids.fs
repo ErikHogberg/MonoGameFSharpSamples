@@ -263,7 +263,7 @@ type BoidsSystem (boundaries: EllipseF) =
         if spawnDelay <= 0f then
 
             // calculate current spawn velocity and spawn box position using accessors
-            let spawnVelocity = this.SpawnVelocity(random.NextSingle(MathHelper.Tau), random.NextSingle(-50f, 10f) + spawnSpeed)
+            let spawnVelocity = this.SpawnVelocity(random.NextSingle(MathHelper.TwoPi), random.NextSingle(-50f, 10f) + spawnSpeed)
             let pointOnBoundary = this.PointOnBoundary
 
             // spawn up to 50 boids on each timer expiration

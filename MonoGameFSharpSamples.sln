@@ -7,6 +7,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Desktop", "Desktop\Desktop.
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Lib", "Lib\Lib.fsproj", "{88FC256C-9802-4A7D-BD93-719702742208}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Android3", "Android3\Android3.fsproj", "{76584CA9-166A-4E6E-89D8-C3D9AA6DA817}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,13 +16,18 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A85CF95-26D1-4B14-B017-05A6792BDCA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8A85CF95-26D1-4B14-B017-05A6792BDCA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A85CF95-26D1-4B14-B017-05A6792BDCA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A85CF95-26D1-4B14-B017-05A6792BDCA6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{88FC256C-9802-4A7D-BD93-719702742208}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{88FC256C-9802-4A7D-BD93-719702742208}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88FC256C-9802-4A7D-BD93-719702742208}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88FC256C-9802-4A7D-BD93-719702742208}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76584CA9-166A-4E6E-89D8-C3D9AA6DA817}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76584CA9-166A-4E6E-89D8-C3D9AA6DA817}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76584CA9-166A-4E6E-89D8-C3D9AA6DA817}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{76584CA9-166A-4E6E-89D8-C3D9AA6DA817}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76584CA9-166A-4E6E-89D8-C3D9AA6DA817}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76584CA9-166A-4E6E-89D8-C3D9AA6DA817}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

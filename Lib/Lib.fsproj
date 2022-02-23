@@ -4,25 +4,25 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MonoGame.Extended" Version="3.8.0"/>
-    <PackageReference Include="MonoGame.Extended.Input" Version="3.8.0"/>
-    <PackageReference Include="MonoGame.Extended.Entities" Version="3.8.0"/>
-    <PackageReference Include="MonoGame.Extended.Tweening" Version="3.8.0"/>
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0"/>
-    <PackageReference Include="MonoGame.Extended.Collisions" Version="3.8.0"/>
+    <PackageReference Include="MonoGame.Extended" Version="3.8.0" />
+    <PackageReference Include="MonoGame.Extended.Input" Version="3.8.0" />
+    <PackageReference Include="MonoGame.Extended.Entities" Version="3.8.0" />
+    <PackageReference Include="MonoGame.Extended.Tweening" Version="3.8.0" />
+    <PackageReference Include="MonoGame.Framework.Portable" Version="3.7.1.189" />
+    <PackageReference Include="MonoGame.Extended.Collisions" Version="3.8.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Parts/Tools.fs"/>
-    <Compile Include="Parts/RenderSystem.fs"/>
-    <Compile Include="Parts/Ship.fs"/>
-    <Compile Include="Parts/Boids.fs"/>
-    <Compile Include="Parts/Asteroids.fs"/>
-    <Compile Include="Parts/GameScreenWithComponents.fs"/>
-    <Compile Include="Danmaku/Bullets.fs"/>
-    <Compile Include="Danmaku/DanmakuPlayer.fs"/>
-    <Compile Include="Danmaku/Danmaku.fs"/>
-    <Compile Include="SpaceTactics/SpaceTactics.fs"/>
-    <Compile Include="DebugScene.fs"/>
-    <Compile Include="Library.fs"/>
+    <Compile Include="Parts/Tools.fs" />
+    <Compile Include="Parts/RenderSystem.fs" />
+    <Compile Include="Parts/Ship.fs" />
+    <Compile Include="Parts/Boids.fs" />
+    <Compile Include="Parts/Asteroids.fs" />
+    <Compile Include="Parts/GameScreenWithComponents.fs" />
+    <Compile Include="Danmaku/Bullets.fs" />
+    <Compile Include="Danmaku/DanmakuPlayer.fs" />
+    <Compile Include="Danmaku/Danmaku.fs" />
+    <Compile Include="SpaceTactics/SpaceTactics.fs" />
+    <Compile Include="DebugScene.fs" />
+    <Compile Include="Library.fs" />
   </ItemGroup>
 </Project>

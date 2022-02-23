@@ -114,23 +114,25 @@ type AsteroidShowerSystem(boundaries: EllipseF) =
     member this.PointOnBoundary
         with get() = boundaries.Center
             + Vector2(
-                boundaries.RadiusX * Cos(spawnAngle + PI*0.5f), 
-                boundaries.RadiusY * Sin(spawnAngle + PI*0.5f) );
+                boundaries.RadiusX * Cos(spawnAngle + MathHelper.PiOver2), 
+                boundaries.RadiusY * Sin(spawnAngle + MathHelper.PiOver2) 
+            );
 
 
     member this.RandomSpawnPos
-        with get() = Vector2(
+        with get() = 
+            Vector2(
                 random.NextSingle(-spawnOffsetRange.X, spawnOffsetRange.X),
                 random.NextSingle(-spawnOffsetRange.Y, spawnOffsetRange.Y) + spawnHeightOffset
             ).Rotate(spawnAngle)
 
-    member this.SpawnRange ()= 
-            let center = Point2(0f, spawnHeightOffset) - spawnOffsetRange
-            RectangleF(center , (spawnOffsetRange * 2f).ToSize())
+    member this.SpawnRange () = 
+        let center = Point2(0f, spawnHeightOffset) - spawnOffsetRange
+        RectangleF(center , (spawnOffsetRange * 2f).ToSize())
             
 
     // member this.Boundaries
-        // wiht set (value) = boundaries <- value
+        // with set (value) = boundaries <- value
 
     // method for spawning new asteroid
     member this.CreateAsteroid(position: Vector2, velocity: Vector2, size: float32) =
