@@ -40,43 +40,11 @@ namespace Android3
 			}
 		}
 		
-		public partial class Id
-		{
-			
-			// aapt resource value: 0x7F010000
-			public const int myButton = 2130771968;
-			
-			static Id()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-			
-			private Id()
-			{
-			}
-		}
-		
-		public partial class Layout
-		{
-			
-			// aapt resource value: 0x7F020000
-			public const int Main = 2130837504;
-			
-			static Layout()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-			
-			private Layout()
-			{
-			}
-		}
-		
 		public partial class Mipmap
 		{
 			
-			// aapt resource value: 0x7F030000
-			public const int Icon = 2130903040;
+			// aapt resource value: 0x7F010000
+			public const int Icon = 2130771968;
 			
 			static Mipmap()
 			{
@@ -91,11 +59,11 @@ namespace Android3
 		public partial class String
 		{
 			
-			// aapt resource value: 0x7F040000
-			public const int app_name = 2130968576;
+			// aapt resource value: 0x7F020000
+			public const int app_name = 2130837504;
 			
-			// aapt resource value: 0x7F040001
-			public const int hello = 2130968577;
+			// aapt resource value: 0x7F020001
+			public const int hello = 2130837505;
 			
 			static String()
 			{

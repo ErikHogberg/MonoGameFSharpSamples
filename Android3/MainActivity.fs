@@ -24,7 +24,11 @@ type MainActivity () =
     override this.OnCreate (bundle) =
     
         base.OnCreate (bundle)
-    
+        
+        //for file in System.IO.Directory.GetFiles(System.IO.Directory.GetCurrentDirectory()) do
+        //    let _ = Android.Util.Log.Info(file, "")
+        //    ()
+        
         game <- new Game1 ()
         view <- ((game.Services.GetService (typedefof<View>)) :?> View)
     

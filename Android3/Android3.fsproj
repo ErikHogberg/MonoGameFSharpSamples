@@ -63,7 +63,6 @@
     <Error Condition="!Exists('..\packages\MonoGame.Framework.Android.3.8.0.1641\build\MonoGame.Framework.Android.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MonoGame.Framework.Android.3.8.0.1641\build\MonoGame.Framework.Android.targets'))" />
   </Target>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\Main.axml" />
     <AndroidResource Include="Resources\values\Strings.xml" />
     <AndroidResource Include="Resources\mipmap-hdpi\Icon.png" />
     <AndroidResource Include="Resources\mipmap-mdpi\Icon.png" />
@@ -87,21 +86,8 @@
     <None Include="mgfxc.deps.json" />
     <None Include="libmojoshader_64.dll" />
     <None Include="CppNet.dll" />
-    <None Include="..\Lib\Content\bin\DesktopGL\1px.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <LinkBase>Content\</LinkBase>
-      <Link>1px.xnb</Link>
-    </None>
-    <None Include="..\Lib\Content\bin\DesktopGL\Fira Code.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <LinkBase>Content\</LinkBase>
-      <Link>Fira Code.xnb</Link>
-    </None>
-    <None Include="..\Lib\Content\bin\DesktopGL\ship.xnb">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <LinkBase>Content\</LinkBase>
-      <Link>ship.xnb</Link>
-    </None>
+    <!--<MonoGameContentReference Include="..\Lib\Content\Content.mgcb" />-->
+    <AndroidAsset Include="..\Lib\Content\bin\Android\*.xnb" CopyToOutputDirectory="PreserveNewest" LinkBase="Assets\Content\" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
