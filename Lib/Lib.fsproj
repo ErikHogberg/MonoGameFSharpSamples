@@ -21,6 +21,7 @@
     <Compile Include="Danmaku/Bullets.fs" />
     <Compile Include="Danmaku/DanmakuPlayer.fs" />
     <Compile Include="Danmaku/Danmaku.fs" />
+    <Compile Include="Misc/Test1.fs" />
     <Compile Include="SpaceTactics/SpaceTactics.fs" />
     <Compile Include="DebugScene.fs" />
     <Compile Include="Library.fs" />

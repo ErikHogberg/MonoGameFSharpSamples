@@ -69,6 +69,7 @@ type Game1() as x =
         graphics.PreferredBackBufferHeight <- 
             // 1080
             720
+
         graphics.PreferMultiSampling <- false
         graphics.ApplyChanges()
 
@@ -79,19 +80,21 @@ type Game1() as x =
         this.Components.Add screenManager
 
         kbdListener.KeyPressed.Add(fun args  ->
-            if args.Key = Keys.Escape then
+            match args.Key with
+            | Keys.Escape ->
                 this.Exit()
-                ()
-            // else if args.Key = Keys.Space then
-            //     this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
-            //     ()
-            else if args.Key = Keys.D1 then
-                screenManager.LoadScreen(new DanmakuGame(this), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
-            else if args.Key = Keys.D2 then
-                screenManager.LoadScreen(new SpaceGame(this), new FadeTransition(this.GraphicsDevice, Color.Red, 1f))
-            else if args.Key = Keys.D3 then
-                screenManager.LoadScreen(new DebugScene(this), new FadeTransition(this.GraphicsDevice, Color.Green, 1f))
-            
+            | Keys.D1 ->
+                screenManager.LoadScreen(new DanmakuGame(this), new FadeTransition(this.GraphicsDevice, Color.Black, 0.5f))
+            | Keys.D2 ->
+                screenManager.LoadScreen(new SpaceGame(this), new FadeTransition(this.GraphicsDevice, Color.Red, 0.5f))
+            | Keys.D3 ->
+                screenManager.LoadScreen(new DebugScene(this), new FadeTransition(this.GraphicsDevice, Color.Green, 0.5f))
+            | Keys.D4 ->
+                screenManager.LoadScreen(new TestGame1(this), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
+            // | Keys.Space ->
+                // this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
+            | _ -> ()
+           
             ())
 
         let viewportAdapter =
@@ -111,8 +114,6 @@ type Game1() as x =
         dot <- this.Content.Load "1px"
 
         // Singleton.Instance.Set("dot", this.dot)
-
-        
 
         screenManager.LoadScreen(new DanmakuGame(this), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
 
