@@ -179,7 +179,7 @@ type BoidsSystem (boundaries: EllipseF) =
 
                 for i in 1..(nearby.Count-1) do
                     let otherBoidEntry = nearby.[i]
-                    let otherBoidActor = (otherBoidEntry.Target :?> Tools.TransformCollisionActor)
+                    let otherBoidActor = (otherBoidEntry.Target :?> Collision.TransformCollisionActor)
                     let otherBoid = otherBoidActor.Data :?> Boid
                     let otherBoidTransform = otherBoidActor.Transform
 
@@ -241,7 +241,7 @@ type BoidsSystem (boundaries: EllipseF) =
                 spawnCount <- spawnCount - 1
             else
                 // insert updated surviving entities into new quadtree
-                nextCollisionTree.Insert (QuadtreeData(Tools.TransformCollisionActor(transform, visualSize, (fun _ -> ()), boid)))
+                nextCollisionTree.Insert (QuadtreeData(Collision.TransformCollisionActor(transform, visualSize, boid)))
                 ()
 
             // boid.Nearby <- []
@@ -284,8 +284,8 @@ type BoidsSystem (boundaries: EllipseF) =
 
         ()
 
-    interface ICollidable with
-        member this.CheckCollision other =
-            (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other )
+    // interface ICollidable with
+        // member this.CheckCollision other =
+            // (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other )
 
 

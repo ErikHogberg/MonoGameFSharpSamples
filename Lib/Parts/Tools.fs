@@ -98,24 +98,3 @@ type Vector2 with
             this.MoveTowards( target, maxDistance)
         
 
-type TransformCollisionActor
-    (
-        transform: Transform2,
-        radius: float32,
-        onCollision: Collisions.CollisionEventArgs -> unit,
-        data
-    ) =
-    let transform = transform
-    let radius = radius
-    let data = data
-
-    member this.Data = data
-    member this.Transform = transform
-
-    interface Collisions.ICollisionActor with
-        member this.Bounds = CircleF(Point2(transform.Position.X, transform.Position.Y), radius) :> IShapeF
-        member this.OnCollision(args) = onCollision (args)
-
-// interface for collision checking support
-type ICollidable =
-    abstract member CheckCollision: IShapeF -> bool // true if supplied shape collides with interface implementer

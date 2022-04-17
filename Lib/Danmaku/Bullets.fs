@@ -46,8 +46,6 @@ type BulletSystem (boundaries: RectangleF) =
 
     let boundaries = boundaries
 
-    let random = new FastRandom()
-
     // mappers for accessing components
 
     let mutable transformMapper: ComponentMapper<Transform2> = null
@@ -66,16 +64,14 @@ type BulletSystem (boundaries: RectangleF) =
             let transform = transformMapper.Get(entityId)
             let bullet = bulletMapper.Get(entityId)
 
-            // check if asteroid is inside the render boundary
+            // check if bullet is inside the render boundary
             let inBoundary = boundaries.Contains(transform.Position.ToPoint2())
 
-            // mark asteroid as having entered boundary
-            // if inBoundary then
-                // bullet.Entered <- true
-
             if bullet.Entered && (not inBoundary) then
+                // despawn bullet if it left the boundary
                 this.DestroyEntity(entityId)
             else
+                // mark bullet as having entered boundary
                 if inBoundary then
                     bullet.Entered <- true
 
@@ -121,6 +117,7 @@ type BulletSpawner (rate: float32, spawnVelocity: Vector2) =
 type BulletSpawnerSystem () =
     inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<BulletSpawner>))
 
+    let random = new FastRandom()
 
     let mutable transformMapper: ComponentMapper<Transform2> = null
     let mutable bulletMapper: ComponentMapper<BulletSpawner> = null
@@ -132,6 +129,7 @@ type BulletSpawnerSystem () =
         entity.Attach transform
         entity.Attach bullet
         entity.Attach (Dot(Size2(size,size), Color.Black))
+        // entity.Attach (Collision.Collidable(5f, ["enemy"], fun () -> false))
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
@@ -151,7 +149,8 @@ type BulletSpawnerSystem () =
             if bulletSpawner.Firing then
                 if bulletSpawner.FiringTimer <= 0f then
                     bulletSpawner.FiringTimer <- bulletSpawner.FiringTimer + bulletSpawner.FiringRate
-                    let _ = this.CreateBullet transform.Position bulletSpawner.SpawnVelocity 3f ["enemy"] false
+                    let size = 2f + random.NextSingle(4f)
+                    let _ = this.CreateBullet transform.Position bulletSpawner.SpawnVelocity size ["enemy"] false
                     ()
                 ()
             else

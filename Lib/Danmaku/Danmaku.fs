@@ -35,7 +35,7 @@ type DanmakuGame (game, graphics) =
     let playerSpeed = 300f;
     let player = Player(playerSpeed,Vector2(300f, 600f))
     let playerBoundaries = RectangleF(Point2(600f,50f), Size2(700f, 1000f))
-    let playerBulletSpawner = BulletSpawner (10f, Vector2.UnitY* -150f) 
+    let playerBulletSpawner = BulletSpawner (10f, Vector2.UnitY* -350f) 
 
     let bulletTarget = CircleF(Point2(700f, 200f), 10f)
 
@@ -51,11 +51,11 @@ type DanmakuGame (game, graphics) =
     let mutable rightPressed = false
 
     let mutable shiftPressed = false
-    let sprintSpeed = 1.5f
+    let sprintMul = 1.5f
     
     let PlayerSpeedEval() = 
         if shiftPressed then
-            playerSpeed*sprintSpeed
+            playerSpeed * sprintMul
         else
             playerSpeed
 

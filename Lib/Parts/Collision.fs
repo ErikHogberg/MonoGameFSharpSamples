@@ -11,39 +11,69 @@ open MonoGame.Extended.Entities.Systems
 open MonoGame.Extended.Collisions
 
 open Tools
-open RenderSystem
 open System.Collections.Generic
 
 // open type System.MathF
 
 
-type Collidable(size: float32, collisionLayers: list<string>, onCollide: unit -> bool) =
+// type Collidable(size: float32, collisionLayers: list<string>, onCollide: unit -> bool) =
 
-    let mutable size = size
-    let collisionLayers = collisionLayers
+//     let mutable size = size
+//     let collisionLayers = collisionLayers
 
-    // returns true if collision did not destroy entity
-    let onCollide = onCollide
+//     // returns true if collision did not destroy entity
+//     let onCollide = onCollide
 
-    member this.Size
-        with get () = size
-        and set (value) = size <- value
+//     member this.Size
+//         with get () = size
+//         and set (value) = size <- value
 
-    member this.CallCollision other =
-        onCollide other
+//     member this.CallCollision other =
+//         onCollide other
 
-    member this.CollisionLayers
-        with get () = collisionLayers
+//     member this.CollisionLayers
+//         with get () = collisionLayers
+
+type TransformCollisionActor
+    (
+        transform: Transform2,
+        radius: float32,
+        data,
+        ?onCollision: CollisionEventArgs -> unit,
+        ?collisionLayers: list<string>,
+        ?tag: string
+    ) =
+
+    let transform = transform
+    let radius = radius
+    let data = data
+    let collisionLayers = defaultArg collisionLayers []
+    let tag = defaultArg tag ""
+    let onCollision = defaultArg onCollision (fun _ -> ())
+
+    member this.Data = data
+    member this.Transform = transform
+    member this.Radius with get() = radius
+    member this.CollisionLayers with get() = collisionLayers
+
+    interface Collisions.ICollisionActor with
+        member this.Bounds = CircleF(Point2(transform.Position.X, transform.Position.Y), radius) :> IShapeF
+        member this.OnCollision(args) = onCollision (args)
+
+// interface for collision checking support
+// type ICollidable =
+    // abstract member CheckCollision: IShapeF -> bool // true if supplied shape collides with interface implementer
 
 
 
 // updating and spawning system
 type CollisionSystem (boundaries: RectangleF) =
-    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<Collidable>))
+    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<TransformCollisionActor>))
 
     let collisionTreeBounds = boundaries //RectangleF (0f,0f, 1500f, 1500f)
 
-    let collisionLayers = Dictionary<string, Quadtree> ()
+    let mutable collisionLayers = Dictionary<string, Quadtree> ()
+    // let nextCollisionLayers = Dictionary<string, Quadtree> ()
     // let mutable collisionTree = Quadtree collisionTreeBounds
 
 
@@ -52,7 +82,7 @@ type CollisionSystem (boundaries: RectangleF) =
     // mappers for accessing components
 
     let mutable transformMapper: ComponentMapper<Transform2> = null
-    let mutable collidableMapper: ComponentMapper<Collidable> = null
+    let mutable collidableMapper: ComponentMapper<TransformCollisionActor> = null
 
     //
 
@@ -70,7 +100,7 @@ type CollisionSystem (boundaries: RectangleF) =
 
     override this.Initialize(mapperService: IComponentMapperService) =
         transformMapper <- mapperService.GetMapper<Transform2>()
-        collidableMapper <- mapperService.GetMapper<Collidable>()
+        collidableMapper <- mapperService.GetMapper<TransformCollisionActor>()
         ()
 
     override this.Update(gameTime: GameTime) =
@@ -89,16 +119,18 @@ type CollisionSystem (boundaries: RectangleF) =
             let x1 = transform.Position.X
             let y1 = transform.Position.X
             let pos = new Point2(x1, y1)
-            let x = (CircleF(pos, collidable.Size))
+            let x = (CircleF(pos, collidable.Radius))
             if this.CheckCollision x collidable.CollisionLayers then
                 for layer in collidable.CollisionLayers do
-                  (GetTree newCollisionLayers layer).Insert (QuadtreeData(Tools.TransformCollisionActor(transform, collidable.Size, (fun _ -> ()), collidable)))
-
+                  (GetTree newCollisionLayers layer).Insert (QuadtreeData(collidable))
+                else
+                    this.DestroyEntity entityId
             ()
 
 
         // replace the old quadtree with the new one in preparation for the next update
         // collisionTree <- nextCollisionTree
+        collisionLayers <- newCollisionLayers
         // removes unneccesary leaf nodes and simplifies the new quad tree
         // nextCollisionTree.Shake()
 
@@ -107,8 +139,10 @@ type CollisionSystem (boundaries: RectangleF) =
     member this.CheckCollision other (layers: list<string>) =
         let mutable survivedCollision = true
         for layer in layers do
-            for collidable in ((GetTree collisionLayers layer).Query other).Where(fun boid -> boid.Bounds.Intersects other).Select(fun c -> (c.Target :?> TransformCollisionActor).Data :?> Collidable) do
-                survivedCollision <- collidable.CallCollision ()
+            for collidable in ((GetTree collisionLayers layer).Query other).Where(fun boid -> boid.Bounds.Intersects other).Select(fun c -> (c.Target :?> TransformCollisionActor)) do
+                // survivedCollision <- collidable.CallCollision ()
+                
+                ()
         
         // if (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other ) then
         //     null

@@ -13,12 +13,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parts/Tools.fs" />
+    <Compile Include="Parts/Collision.fs" />
     <Compile Include="Parts/RenderSystem.fs" />
     <Compile Include="Parts/Ship.fs" />
     <Compile Include="Parts/Boids.fs" />
     <Compile Include="Parts/Asteroids.fs" />
     <Compile Include="Parts/GameScreenWithComponents.fs" />
-    <Compile Include="Parts/Collision.fs" />
     <Compile Include="Danmaku/Bullets.fs" />
     <Compile Include="Danmaku/DanmakuPlayer.fs" />
     <Compile Include="Danmaku/Danmaku.fs" />
