@@ -18,6 +18,7 @@
     <Compile Include="Parts/Boids.fs" />
     <Compile Include="Parts/Asteroids.fs" />
     <Compile Include="Parts/GameScreenWithComponents.fs" />
+    <Compile Include="Parts/Collision.fs" />
     <Compile Include="Danmaku/Bullets.fs" />
     <Compile Include="Danmaku/DanmakuPlayer.fs" />
     <Compile Include="Danmaku/Danmaku.fs" />

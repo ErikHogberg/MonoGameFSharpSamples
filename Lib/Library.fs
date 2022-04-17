@@ -84,13 +84,13 @@ type Game1() as x =
             | Keys.Escape ->
                 this.Exit()
             | Keys.D1 ->
-                screenManager.LoadScreen(new DanmakuGame(this), new FadeTransition(this.GraphicsDevice, Color.Black, 0.5f))
+                screenManager.LoadScreen(new DanmakuGame(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Black, 0.5f))
             | Keys.D2 ->
-                screenManager.LoadScreen(new SpaceGame(this), new FadeTransition(this.GraphicsDevice, Color.Red, 0.5f))
+                screenManager.LoadScreen(new SpaceGame(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Red, 0.5f))
             | Keys.D3 ->
-                screenManager.LoadScreen(new DebugScene(this), new FadeTransition(this.GraphicsDevice, Color.Green, 0.5f))
+                screenManager.LoadScreen(new DebugScene(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Green, 0.5f))
             | Keys.D4 ->
-                screenManager.LoadScreen(new TestGame1(this), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
+                screenManager.LoadScreen(new TestGame1(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
             // | Keys.Space ->
                 // this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
             | _ -> ()
@@ -115,7 +115,7 @@ type Game1() as x =
 
         // Singleton.Instance.Set("dot", this.dot)
 
-        screenManager.LoadScreen(new DanmakuGame(this), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
+        screenManager.LoadScreen(new DanmakuGame(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
 
         ()
 

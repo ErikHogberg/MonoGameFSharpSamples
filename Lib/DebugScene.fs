@@ -17,8 +17,8 @@ open MonoGame.Extended.Screens.Transitions
 open GameScreenWithComponents
 open Tools
 
-type DebugScene(game: Game) =
-    inherit GameScreenWithComponents(game)
+type DebugScene(game: Game, graphics) =
+    inherit GameScreenWithComponents(game, graphics)
 
     let mutable firaCode: SpriteFont = null
     let mutable camera: OrthographicCamera = null

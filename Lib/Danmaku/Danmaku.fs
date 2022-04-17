@@ -18,28 +18,25 @@ open MonoGame.Extended.Tweening
 
 open RenderSystem
 open GameScreenWithComponents
-open Asteroids
 open Boids
 open Bullets
 open Tools
 
-type DanmakuGame (game) =
-    inherit GameScreenWithComponents (game)
+type DanmakuGame (game, graphics) =
+    inherit GameScreenWithComponents (game, graphics)
 
     let mutable dot: Texture2D = null
     let mutable fira: SpriteFont = null
 
     let mutable camera: OrthographicCamera = null
-    let mutable bullets1: PlayerBulletSystem = Unchecked.defaultof<PlayerBulletSystem>
 
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
 
     let playerSpeed = 300f;
     let player = Player(playerSpeed,Vector2(300f, 600f))
     let playerBoundaries = RectangleF(Point2(600f,50f), Size2(700f, 1000f))
+    let playerBulletSpawner = BulletSpawner (10f, Vector2.UnitY* -150f) 
 
-    // let box = RectangleF(600f, 200f, 50f,80f)
-    // let bubble = EllipseF(Vector2(600f, 400f), 50f,80f) 
     let bulletTarget = CircleF(Point2(700f, 200f), 10f)
 
     let tweener = new Tweener()
@@ -92,7 +89,8 @@ type DanmakuGame (game) =
 
             match args.Key with 
             | Keys.Z ->
-                bullets1.Firing <- true
+                playerBulletSpawner.Firing <- true
+                // bullets1.Firing <- true
             | Keys.W | Keys.I ->
                 upPressed <- true
                 // player.SetVelocity(Vector2.UnitY * -playerSpeed)
@@ -120,7 +118,8 @@ type DanmakuGame (game) =
 
             match args.Key with 
             | Keys.Z ->
-                bullets1.Firing <- false
+                playerBulletSpawner.Firing <- false
+                // bullets1.Firing <- false
             | Keys.W | Keys.I ->
                 upPressed <- false
                 if( player.CurrentVelocity.Y < 0f) then
@@ -164,20 +163,22 @@ type DanmakuGame (game) =
         dot <- this.Content.Load "1px"
         fira <- this.Content.Load "Fira Code"
 
-        bullets1 <- new PlayerBulletSystem(player.Transform,playerBoundaries)
-
-        bullets1.Target <- bulletTarget//CircleF(Vector2(300f, 200f), 1f)
-
         let world =
             WorldBuilder()
                 
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, camera))
 
-                .AddSystem(bullets1)
-                .AddSystem(new EnemyBulletSystem(Transform2(800f,150f,0f,0f,0f), playerBoundaries))
+                .AddSystem(new BulletSystem(playerBoundaries))
+                // .AddSystem(new EnemyBulletSystem(Transform2(800f,150f,0f,0f,0f), playerBoundaries))
+                .AddSystem(new BulletSpawnerSystem())
                 .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
+                .AddSystem(new Collision.CollisionSystem(playerBoundaries))
 
                 .Build ()
+
+        let playerEntity = world.CreateEntity()
+        playerEntity.Attach player.Transform
+        playerEntity.Attach playerBulletSpawner
 
         this.Components.Add (world)
 

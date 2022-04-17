@@ -23,14 +23,14 @@ open Boids
 open Bullets
 open Tools
 
-type TestGame1 (game) =
-    inherit GameScreenWithComponents (game)
+type TestGame1 (game, graphics) =
+    inherit GameScreenWithComponents (game, graphics)
 
     let mutable dot: Texture2D = null
     let mutable fira: SpriteFont = null
 
     let mutable camera: OrthographicCamera = null
-    let mutable bullets1: PlayerBulletSystem = Unchecked.defaultof<PlayerBulletSystem>
+    let mutable bullets1: BulletSystem = Unchecked.defaultof<BulletSystem>
     let mutable boids1: BoidsSystem = Unchecked.defaultof<BoidsSystem>
 
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
@@ -85,8 +85,8 @@ type TestGame1 (game) =
         kbdListener.KeyPressed.Add(fun args  ->
 
             match args.Key with 
-            | Keys.Z ->
-                bullets1.Firing <- true
+            // | Keys.Z ->
+                // bullets1.Firing <- true
             | Keys.W | Keys.I ->
                 upPressed <- true
                 // player.SetVelocity(Vector2.UnitY * -playerSpeed)
@@ -110,8 +110,8 @@ type TestGame1 (game) =
         kbdListener.KeyReleased.Add(fun args ->
 
             match args.Key with 
-            | Keys.Z ->
-                bullets1.Firing <- false
+            // | Keys.Z ->
+                // bullets1.Firing <- false
             | Keys.W | Keys.I ->
                 upPressed <- false
                 if( player.CurrentVelocity.Y < 0f) then
@@ -156,9 +156,9 @@ type TestGame1 (game) =
         boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center.ToVector(), 300f, 450f))
         boids1.Target <- boidsTarget
 
-        bullets1 <- new PlayerBulletSystem(player.Transform,playerBoundaries)
+        bullets1 <- new BulletSystem(RectangleF (0f,0f, 1500f, 1500f))
 
-        bullets1.Target <- bulletTarget//CircleF(Vector2(300f, 200f), 1f)
+        // bullets1.Target <- bulletTarget//CircleF(Vector2(300f, 200f), 1f)
 
         let world =
             WorldBuilder()
@@ -169,7 +169,7 @@ type TestGame1 (game) =
                 // .AddSystem(new BoidsRenderSystem(this.GraphicsDevice, camera))
 
                 .AddSystem(bullets1)
-                .AddSystem(new EnemyBulletSystem(Transform2(300f,150f,0f,0f,0f), playerBoundaries))
+                // .AddSystem(new EnemyBulletSystem(Transform2(300f,150f,0f,0f,0f), playerBoundaries))
                 .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
 
                 .Build()

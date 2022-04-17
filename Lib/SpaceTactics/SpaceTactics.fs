@@ -20,8 +20,8 @@ open RenderSystem
 open GameScreenWithComponents
 open Asteroids
 
-type SpaceGame(game: Game) =
-    inherit GameScreenWithComponents(game)
+type SpaceGame(game, graphics) =
+    inherit GameScreenWithComponents(game, graphics)
 
     let mutable dot: Texture2D = null
     let mutable fira: SpriteFont = null

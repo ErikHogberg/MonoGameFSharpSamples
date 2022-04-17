@@ -9,10 +9,11 @@ open System
 
 
 [<AbstractClass>]
-type GameScreenWithComponents (game: Game) =
+type GameScreenWithComponents (game: Game, graphics: GraphicsDeviceManager) =
     inherit Screen()
 
     let game = game
+    let graphics = graphics
 
     let mutable drawables = List<IDrawable>.Empty
     let mutable updateables = List<IUpdateable>.Empty
@@ -88,6 +89,10 @@ type GameScreenWithComponents (game: Game) =
                 this.DecategorizeComponent(e.GameComponent)
                 ()
         )
+
+        graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width;
+        graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height;
+        graphics.ApplyChanges();
         
         ()
 
