@@ -34,31 +34,38 @@ open System.Collections.Generic
 //     member this.CollisionLayers
 //         with get () = collisionLayers
 
+// FIXME: remove self collision
+// IDEA: store id in TransformCollisionActor? use entity id or generate own unique id?
+
 type TransformCollisionActor
     (
         transform: Transform2,
         radius: float32,
-        data,
-        ?onCollision: CollisionEventArgs -> unit,
-        ?collisionLayers: list<string>,
-        ?tag: string
+        tag: string,
+        ?data,
+        ?onCollision: TransformCollisionActor -> bool
+        // ?collisionLayers: list<string>,
     ) =
 
     let transform = transform
     let radius = radius
-    let data = data
-    let collisionLayers = defaultArg collisionLayers []
-    let tag = defaultArg tag ""
-    let onCollision = defaultArg onCollision (fun _ -> ())
+    let tag = tag
+    let data = defaultArg data null
+    // let collisionLayers = defaultArg collisionLayers []
+    let onCollision = defaultArg onCollision (fun _ -> true)
 
     member this.Data = data
     member this.Transform = transform
-    member this.Radius with get() = radius
-    member this.CollisionLayers with get() = collisionLayers
+    member this.Radius with get () = radius
+    // member this.CollisionLayers with get() = collisionLayers
+    member this.Tag with get () = tag
+
+    member this.CallCollision other = 
+        onCollision other
 
     interface Collisions.ICollisionActor with
-        member this.Bounds = CircleF(Point2(transform.Position.X, transform.Position.Y), radius) :> IShapeF
-        member this.OnCollision(args) = onCollision (args)
+        member this.Bounds = CircleF(Point2(transform.Position.X, transform.Position.Y), radius)
+        member this.OnCollision(args) = ()// onCollision (args)
 
 // interface for collision checking support
 // type ICollidable =
@@ -72,9 +79,9 @@ type CollisionSystem (boundaries: RectangleF) =
 
     let collisionTreeBounds = boundaries //RectangleF (0f,0f, 1500f, 1500f)
 
-    let mutable collisionLayers = Dictionary<string, Quadtree> ()
+    // let mutable collisionLayers = Dictionary<string, Quadtree> ()
     // let nextCollisionLayers = Dictionary<string, Quadtree> ()
-    // let mutable collisionTree = Quadtree collisionTreeBounds
+    let mutable collisionTree = Quadtree collisionTreeBounds
 
 
     let random = new FastRandom()
@@ -92,11 +99,11 @@ type CollisionSystem (boundaries: RectangleF) =
             tree
         else
             let newTree = Quadtree collisionTreeBounds
-            collisionLayers[key] <- newTree
+            // collisionLayers[key] <- newTree
             newTree
 
-    member this.GetOldTree key =
-        GetTree collisionLayers key
+    // member this.GetOldTree key =
+        // GetTree collisionLayers key
 
     override this.Initialize(mapperService: IComponentMapperService) =
         transformMapper <- mapperService.GetMapper<Transform2>()
@@ -107,8 +114,8 @@ type CollisionSystem (boundaries: RectangleF) =
         let dt = gameTime.GetElapsedSeconds()
 
         // quadtree that will be used next update
-        // let nextCollisionTree = Quadtree collisionTreeBounds
-        let newCollisionLayers = Dictionary<string, Quadtree> ()
+        let nextCollisionTree = Quadtree collisionTreeBounds
+        // let newCollisionLayers = Dictionary<string, Quadtree> ()
         
         for entityId in this.ActiveEntities do
             let transform = transformMapper.Get(entityId)
@@ -117,32 +124,36 @@ type CollisionSystem (boundaries: RectangleF) =
             // check if asteroid is inside the render boundary
             let inBoundary = boundaries.Contains(transform.Position.ToPoint2())
             let x1 = transform.Position.X
-            let y1 = transform.Position.X
+            let y1 = transform.Position.Y
             let pos = new Point2(x1, y1)
             let x = (CircleF(pos, collidable.Radius))
-            if this.CheckCollision x collidable.CollisionLayers then
-                for layer in collidable.CollisionLayers do
-                  (GetTree newCollisionLayers layer).Insert (QuadtreeData(collidable))
-                else
-                    this.DestroyEntity entityId
+            if this.CheckCollision x collidable then
+                // for layer in collidable.CollisionLayers do
+                    // (GetTree newCollisionLayers layer).Insert (QuadtreeData(collidable))
+                nextCollisionTree.Insert (QuadtreeData(collidable))
+            else
+                this.DestroyEntity entityId
             ()
 
 
         // replace the old quadtree with the new one in preparation for the next update
-        // collisionTree <- nextCollisionTree
-        collisionLayers <- newCollisionLayers
+        collisionTree <- nextCollisionTree
+        // collisionLayers <- newCollisionLayers
         // removes unneccesary leaf nodes and simplifies the new quad tree
         // nextCollisionTree.Shake()
 
         ()
 
-    member this.CheckCollision other (layers: list<string>) =
+    member this.CheckCollision other collidable  =
         let mutable survivedCollision = true
-        for layer in layers do
-            for collidable in ((GetTree collisionLayers layer).Query other).Where(fun boid -> boid.Bounds.Intersects other).Select(fun c -> (c.Target :?> TransformCollisionActor)) do
+        for collidable2 in (collisionTree.Query other).Where(fun boid -> boid.Bounds.Intersects other).Select(fun c -> (c.Target :?> TransformCollisionActor)) do
+            survivedCollision <- collidable.CallCollision collidable2
+
+        // for layer in collidable.CollisionLayers do
+            // for collidable in ((GetTree collisionLayers layer).Query other).Where(fun boid -> boid.Bounds.Intersects other).Select(fun c -> (c.Target :?> TransformCollisionActor)) do
                 // survivedCollision <- collidable.CallCollision ()
-                
-                ()
+                // survivedCollision <- collidable.CallCollision()
+                // ()
         
         // if (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other ) then
         //     null

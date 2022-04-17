@@ -241,7 +241,7 @@ type BoidsSystem (boundaries: EllipseF) =
                 spawnCount <- spawnCount - 1
             else
                 // insert updated surviving entities into new quadtree
-                nextCollisionTree.Insert (QuadtreeData(Collision.TransformCollisionActor(transform, visualSize, boid)))
+                nextCollisionTree.Insert (QuadtreeData(Collision.TransformCollisionActor(transform, visualSize, "boid", boid)))
                 ()
 
             // boid.Nearby <- []

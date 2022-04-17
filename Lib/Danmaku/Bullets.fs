@@ -16,12 +16,10 @@ open RenderSystem
 // open type System.MathF
 
 
-type Bullet(velocity: Vector2, size: float32, collisionLayers: list<string>, homing: bool) =
+type Bullet(velocity: Vector2, size: float32, homing: bool) =
 
     let mutable velocity = velocity
     let mutable size = size
-
-    let collisionLayers = collisionLayers
 
     let mutable entered = false
 
@@ -122,14 +120,14 @@ type BulletSpawnerSystem () =
     let mutable transformMapper: ComponentMapper<Transform2> = null
     let mutable bulletMapper: ComponentMapper<BulletSpawner> = null
 
-    member this.CreateBullet (position: Vector2) velocity size layers homing =
+    member this.CreateBullet (position: Vector2) velocity size homing =
         let entity = this.CreateEntity()
         let transform = Transform2(position)
-        let bullet = Bullet(velocity, size, layers, homing)
+        let bullet = Bullet(velocity, size, homing)
         entity.Attach transform
         entity.Attach bullet
         entity.Attach (Dot(Size2(size,size), Color.Black))
-        // entity.Attach (Collision.Collidable(5f, ["enemy"], fun () -> false))
+        entity.Attach (Collision.TransformCollisionActor(transform, 5f, "bullet", fun (other: Collision.TransformCollisionActor) -> other.Tag = "enemy"))
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
@@ -150,7 +148,7 @@ type BulletSpawnerSystem () =
                 if bulletSpawner.FiringTimer <= 0f then
                     bulletSpawner.FiringTimer <- bulletSpawner.FiringTimer + bulletSpawner.FiringRate
                     let size = 2f + random.NextSingle(4f)
-                    let _ = this.CreateBullet transform.Position bulletSpawner.SpawnVelocity size ["enemy"] false
+                    let _ = this.CreateBullet transform.Position bulletSpawner.SpawnVelocity size false
                     ()
                 ()
             else

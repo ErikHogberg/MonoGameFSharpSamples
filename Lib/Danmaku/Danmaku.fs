@@ -63,22 +63,12 @@ type DanmakuGame (game, graphics) =
 
     override this.Initialize() =
         
-        // FIXME: stretched on launch until resize        
         let viewportAdapter =
-            // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
-            // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1080, 1920)
             new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
 
         camera <- OrthographicCamera(viewportAdapter)
 
-        // TODO: resize on screen change
-        // IDEA: expose camera field, resize from Game1
-        // graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width;
-        // graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height;
-        // graphics.ApplyChanges()
-
-        // let easingFn = EasingFunctions.QuadraticIn
-        
+        // let easingFn = EasingFunctions.QuadraticIn        
 
         let listenerComponent =
             new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
@@ -180,6 +170,20 @@ type DanmakuGame (game, graphics) =
         playerEntity.Attach player.Transform
         playerEntity.Attach playerBulletSpawner
 
+        Console.WriteLine "load enemy"
+
+
+        let enemyEntity = world.CreateEntity()
+        let enemyTransform = Transform2(bulletTarget.Position.ToVector())
+        enemyEntity.Attach enemyTransform
+        enemyEntity.Attach (Collision.TransformCollisionActor(enemyTransform, bulletTarget.Radius, "enemy", onCollision = (
+            fun other ->                 
+                let hit =other.Tag = "bullet"
+                if hit then Console.WriteLine "hit enemy"
+                not hit
+            )))
+        enemyEntity.Attach (Dot(Size2(8f,8f), Color.AliceBlue))
+
         this.Components.Add (world)
 
         base.LoadContent ()
@@ -203,7 +207,7 @@ type DanmakuGame (game, graphics) =
         spriteBatch.Begin (transformMatrix = camera.GetViewMatrix())
 
         spriteBatch.FillRectangle (playerBoundaries, Color.DarkSalmon)
-        spriteBatch.DrawCircle(bulletTarget, 8, Color.AliceBlue, 5f)
+        // spriteBatch.DrawCircle(bulletTarget, 8, Color.AliceBlue, 5f)
 
         player.Draw spriteBatch gameTime
 
