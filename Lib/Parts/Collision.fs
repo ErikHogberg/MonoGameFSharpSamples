@@ -84,7 +84,7 @@ type CollisionSystem (boundaries: RectangleF) =
     let mutable collisionTree = Quadtree collisionTreeBounds
 
 
-    let random = new FastRandom()
+    // let random = new FastRandom()
 
     // mappers for accessing components
 
@@ -118,29 +118,27 @@ type CollisionSystem (boundaries: RectangleF) =
         // let newCollisionLayers = Dictionary<string, Quadtree> ()
         
         for entityId in this.ActiveEntities do
-            let transform = transformMapper.Get(entityId)
-            let collidable = collidableMapper.Get(entityId)
+            let transform = transformMapper.Get entityId
+            let collidable = collidableMapper.Get entityId
 
-            // check if asteroid is inside the render boundary
-            let inBoundary = boundaries.Contains(transform.Position.ToPoint2())
-            let x1 = transform.Position.X
-            let y1 = transform.Position.Y
-            let pos = new Point2(x1, y1)
-            let x = (CircleF(pos, collidable.Radius))
-            if this.CheckCollision x collidable then
-                // for layer in collidable.CollisionLayers do
-                    // (GetTree newCollisionLayers layer).Insert (QuadtreeData(collidable))
-                nextCollisionTree.Insert (QuadtreeData(collidable))
-            else
+            // let inBoundary = boundaries.Contains(transform.Position.ToPoint2())
+
+            let shape = CircleF(transform.Position.ToPoint(), collidable.Radius)
+
+            // for layer in collidable.CollisionLayers do
+                // (GetTree newCollisionLayers layer).Insert (QuadtreeData(collidable))
+            nextCollisionTree.Insert (QuadtreeData collidable)
+            if not (this.CheckCollision shape collidable) then
+                collisionTree.Insert (QuadtreeData collidable)
                 this.DestroyEntity entityId
             ()
 
 
+        // removes unneccesary leaf nodes and simplifies the new quad tree
+        nextCollisionTree.Shake ()
         // replace the old quadtree with the new one in preparation for the next update
         collisionTree <- nextCollisionTree
         // collisionLayers <- newCollisionLayers
-        // removes unneccesary leaf nodes and simplifies the new quad tree
-        // nextCollisionTree.Shake()
 
         ()
 
@@ -155,14 +153,5 @@ type CollisionSystem (boundaries: RectangleF) =
                 // survivedCollision <- collidable.CallCollision()
                 // ()
         
-        // if (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other ) then
-        //     null
-        // else
-        //     null
-
         survivedCollision
-
-    // interface ICollidable with
-        // member this.CheckCollision other =
-            // (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other )
 

@@ -45,6 +45,8 @@ module Singleton =
 
 type Point2 with
     member this.ToVector() = Vector2(this.X, this.Y)
+type Size2 with
+    member this.ToVector() = Vector2(this.Width, this.Height)
 
 type Vector2 with
     member this.ToPoint2() = Point2(this.X, this.Y)

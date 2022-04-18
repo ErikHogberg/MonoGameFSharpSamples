@@ -222,7 +222,7 @@ type TestGame1 (game, graphics) =
         player.Draw spriteBatch gameTime
 
 
-        spriteBatch.DrawString(fira, "Danmaku", Vector2(600f, 100f), Color.WhiteSmoke);
+        spriteBatch.DrawString(fira, "Old danmaku scene (broken)", Vector2(600f, 100f), Color.WhiteSmoke);
 
         spriteBatch.End()
 

@@ -8,6 +8,7 @@ open MonoGame.Extended.Entities
 open MonoGame.Extended.Entities.Systems
 open MonoGame.Extended.Sprites
 
+open Tools
 
 type SpriteRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
     inherit EntityDrawSystem(Aspect
@@ -106,10 +107,7 @@ type DotRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera)
         for entityId in this.ActiveEntities do
             let transform = transformMapper.Get entityId
             let dot = dotMapper.Get entityId
-            // spriteBatch.Draw(sprite, transform)
-            // TODO: apply transform
-            // spriteBatch.DrawEllipse(sprite.Center, Vector2( sprite.RadiusX, sprite.RadiusY),16, Color.Gold)
-            spriteBatch.FillRectangle(transform.Position, dot.Size, dot.Color)
+            spriteBatch.FillRectangle(transform.Position - dot.Size.ToVector(), dot.Size * 2f, dot.Color)
             ()
 
         spriteBatch.End()
