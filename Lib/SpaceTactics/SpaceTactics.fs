@@ -5,15 +5,12 @@ open System
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Input
 open Microsoft.Xna.Framework.Graphics
-open Microsoft.Xna.Framework.Content
 
 open MonoGame.Extended
 open MonoGame.Extended.Input.InputListeners
 open MonoGame.Extended.Entities
 open MonoGame.Extended.Sprites
 open MonoGame.Extended.ViewportAdapters
-open MonoGame.Extended.Screens
-open MonoGame.Extended.Screens.Transitions
 open MonoGame.Extended.Tweening
 
 open RenderSystem
@@ -88,7 +85,6 @@ type SpaceGame(game, graphics) =
             WorldBuilder()
                 
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, camera))
-                // .AddSystem(new TransformUpdateSystem())
 
                 .AddSystem(asteroids1)
                 .AddSystem(new AsteroidExpirySystem())

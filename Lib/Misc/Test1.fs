@@ -30,120 +30,23 @@ type TestGame1 (game, graphics) =
     let mutable fira: SpriteFont = null
 
     let mutable camera: OrthographicCamera = null
-    let mutable bullets1: BulletSystem = Unchecked.defaultof<BulletSystem>
     let mutable boids1: BoidsSystem = Unchecked.defaultof<BoidsSystem>
 
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
 
-    let playerSpeed = 300f;
-    let player = Player(playerSpeed,Vector2(300f, 600f))
-    let playerBoundaries = RectangleF(Point2(200f,100f), Size2(400f, 600f))
-
-    let box = RectangleF(600f, 200f, 50f,80f)
-    let bubble = EllipseF(Vector2(600f, 400f), 50f,80f) 
-    let bulletTarget = CircleF(Point2(400f, 200f), 1f)
-
     let boidsTarget = CircleF(Point2(1300f, 600f), 10f)
 
-    let mutable asteroidAngle = 0f
+    let mutable spawnAngle = 0f
 
-    let tweener = new Tweener()
-
-    let mutable mouseListener = MouseListener()
-    let mutable touchListener = TouchListener()
-    let mutable kbdListener = KeyboardListener()
-
-    let mutable upPressed = false
-    let mutable leftPressed = false
-    let mutable downPressed = false
-    let mutable rightPressed = false
     
     override this.Initialize() =
         
-        // FIXME: stretched on launch until resize        
         let viewportAdapter =
-            // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
-            // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1080, 1920)
             new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
 
         camera <- OrthographicCamera(viewportAdapter)
 
-        // TODO: resize on screen change
-        // IDEA: expose camera field, resize from Game1
-        // graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width;
-        // graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height;
-        // graphics.ApplyChanges()
-
-        let easingFn = EasingFunctions.QuadraticIn
         
-
-        let listenerComponent =
-            new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
-
-        this.Components.Add listenerComponent
-
-        kbdListener.KeyPressed.Add(fun args  ->
-
-            match args.Key with 
-            // | Keys.Z ->
-                // bullets1.Firing <- true
-            | Keys.W | Keys.I ->
-                upPressed <- true
-                // player.SetVelocity(Vector2.UnitY * -playerSpeed)
-                player.CurrentVelocity <- Vector2.UnitY * -playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
-            | Keys.A | Keys.J ->
-                leftPressed <- true
-                player.CurrentVelocity <- Vector2.UnitX * -playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
-                // player.SetVelocity(Vector2.UnitX * -playerSpeed)
-            | Keys.S | Keys.K ->
-                downPressed <- true
-                player.CurrentVelocity <- Vector2.UnitY * playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
-                // player.SetVelocity(Vector2.UnitY * playerSpeed)
-            | Keys.D | Keys.L ->
-                rightPressed <- true
-                player.CurrentVelocity <- Vector2.UnitX * playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
-                // player.SetVelocity(Vector2.UnitX * playerSpeed)
-            | _ -> ()
-
-            ())
-
-        kbdListener.KeyReleased.Add(fun args ->
-
-            match args.Key with 
-            // | Keys.Z ->
-                // bullets1.Firing <- false
-            | Keys.W | Keys.I ->
-                upPressed <- false
-                if( player.CurrentVelocity.Y < 0f) then
-                    if downPressed then
-                        player.CurrentVelocity <- Vector2.UnitY * playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
-                    else
-                        player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
-            | Keys.A | Keys.J ->
-                leftPressed <- false
-                if( player.CurrentVelocity.X < 0f) then
-                    if rightPressed then 
-                        player.CurrentVelocity <- Vector2.UnitX * playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
-                    else
-                        player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
-            | Keys.S | Keys.K ->
-                downPressed <- false
-                if( player.CurrentVelocity.Y > 0f) then
-                    if upPressed then
-                        player.CurrentVelocity <- Vector2.UnitY * -playerSpeed + Vector2.UnitX* player.CurrentVelocity.X
-                    else
-                        player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
-            | Keys.D | Keys.L ->
-                rightPressed <- false
-                if( player.CurrentVelocity.X > 0f) then
-                    if leftPressed then 
-                        player.CurrentVelocity <- Vector2.UnitX * -playerSpeed + Vector2.UnitY* player.CurrentVelocity.Y
-                    else
-                        player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
-
-            | _ -> ()
-            ())
-
         base.Initialize()
         ()
 
@@ -156,9 +59,6 @@ type TestGame1 (game, graphics) =
         boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center.ToVector(), 300f, 450f))
         boids1.Target <- boidsTarget
 
-        bullets1 <- new BulletSystem(RectangleF (0f,0f, 1500f, 1500f))
-
-        // bullets1.Target <- bulletTarget//CircleF(Vector2(300f, 200f), 1f)
 
         let world =
             WorldBuilder()
@@ -168,7 +68,6 @@ type TestGame1 (game, graphics) =
                 .AddSystem(boids1)
                 // .AddSystem(new BoidsRenderSystem(this.GraphicsDevice, camera))
 
-                .AddSystem(bullets1)
                 // .AddSystem(new EnemyBulletSystem(Transform2(300f,150f,0f,0f,0f), playerBoundaries))
                 .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
 
@@ -184,13 +83,9 @@ type TestGame1 (game, graphics) =
         let dt = gameTime.GetElapsedSeconds()
 
         // TODO: tweener component or entity?
-        tweener.Update dt
 
-        asteroidAngle <- (asteroidAngle + dt * 0.15f) % (MathF.PI*2f)
-        boids1.SpawnAngle <-  asteroidAngle
-
-        player.Update gameTime
-        player.ConstrainToFrame playerBoundaries
+        spawnAngle <- (spawnAngle + dt * 0.15f) % (MathF.PI*2f)
+        boids1.SpawnAngle <-  spawnAngle
 
         base.Update gameTime
         ()
@@ -219,10 +114,10 @@ type TestGame1 (game, graphics) =
         spriteBatch.DrawLine(bottomright, topright, Color.Brown, thickness)
         spriteBatch.DrawLine(bottomright, bottomleft, Color.Brown, thickness)
 
-        player.Draw spriteBatch gameTime
+        // player.Draw spriteBatch gameTime
 
 
-        spriteBatch.DrawString(fira, "Old danmaku scene (broken)", Vector2(600f, 100f), Color.WhiteSmoke);
+        spriteBatch.DrawString(fira, "boids", Vector2(600f, 100f), Color.WhiteSmoke);
 
         spriteBatch.End()
 

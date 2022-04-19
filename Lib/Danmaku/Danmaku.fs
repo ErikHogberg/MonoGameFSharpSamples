@@ -21,6 +21,7 @@ open GameScreenWithComponents
 open Boids
 open Bullets
 open Tools
+open TransformUpdater
 
 type DanmakuGame (game, graphics) =
     inherit GameScreenWithComponents (game, graphics)
@@ -36,8 +37,10 @@ type DanmakuGame (game, graphics) =
     let enemyTag = "enemy"
 
     let playerSpeed = 400f;
-    let player = Player(playerSpeed,Vector2(300f, 600f))
-    let playerBoundaries = RectangleF(Point2(600f,50f), Size2(700f, 1000f))
+    let player = Player ()
+    let playerTransform = Transform2(Vector2(300f, 600f))
+    let playerBoundaries = RectangleF(Point2(600f, 50f), Size2(700f, 1000f))
+    let playerMover = ConstrainedTransform ()
     let playerBulletSpawner = BulletSpawner (
         10f, 
         Vector2.UnitY* -350f,
@@ -67,7 +70,7 @@ type DanmakuGame (game, graphics) =
         else
             playerSpeed
 
-    do player.Speed <- PlayerSpeedEval()
+    do playerMover.Speed <- PlayerSpeedEval()
 
     override this.Initialize() =
         
@@ -83,31 +86,28 @@ type DanmakuGame (game, graphics) =
 
         this.Components.Add listenerComponent
 
+        // TODO: player input ecs
+
         kbdListener.KeyPressed.Add(fun args  ->
 
             match args.Key with 
             | Keys.Z ->
                 playerBulletSpawner.Firing <- true
-                // bullets1.Firing <- true
             | Keys.W | Keys.I ->
                 upPressed <- true
-                // player.SetVelocity(Vector2.UnitY * -playerSpeed)
-                player.CurrentVelocity <- Vector2.UnitY * -1f + Vector2.UnitX* player.CurrentVelocity.X
+                playerMover.Velocity <- Vector2.UnitY * -1f + Vector2.UnitX* playerMover.Velocity.X
             | Keys.A | Keys.J ->
                 leftPressed <- true
-                player.CurrentVelocity <- Vector2.UnitX * -1f + Vector2.UnitY* player.CurrentVelocity.Y
-                // player.SetVelocity(Vector2.UnitX * -playerSpeed)
+                playerMover.Velocity <- Vector2.UnitX * -1f + Vector2.UnitY* playerMover.Velocity.Y
             | Keys.S | Keys.K ->
                 downPressed <- true
-                player.CurrentVelocity <- Vector2.UnitY + Vector2.UnitX* player.CurrentVelocity.X
-                // player.SetVelocity(Vector2.UnitY * playerSpeed)
+                playerMover.Velocity <- Vector2.UnitY + Vector2.UnitX* playerMover.Velocity.X
             | Keys.D | Keys.L ->
                 rightPressed <- true
-                player.CurrentVelocity <- Vector2.UnitX + Vector2.UnitY* player.CurrentVelocity.Y
-                // player.SetVelocity(Vector2.UnitX * playerSpeed)
+                playerMover.Velocity <- Vector2.UnitX + Vector2.UnitY* playerMover.Velocity.Y
             | Keys.LeftShift -> 
                 shiftPressed <- true
-                player.Speed <- PlayerSpeedEval()
+                playerMover.Speed <- PlayerSpeedEval()
             | _ -> ()
 
             ())
@@ -120,35 +120,35 @@ type DanmakuGame (game, graphics) =
                 // bullets1.Firing <- false
             | Keys.W | Keys.I ->
                 upPressed <- false
-                if( player.CurrentVelocity.Y < 0f) then
+                if( playerMover.Velocity.Y < 0f) then
                     if downPressed then
-                        player.CurrentVelocity <- Vector2.UnitY+ Vector2.UnitX* player.CurrentVelocity.X
+                        playerMover.Velocity <- Vector2.UnitY+ Vector2.UnitX* playerMover.Velocity.X
                     else
-                        player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
+                        playerMover.Velocity <- Vector2.UnitX * playerMover.Velocity.X
             | Keys.A | Keys.J ->
                 leftPressed <- false
-                if( player.CurrentVelocity.X < 0f) then
+                if( playerMover.Velocity.X < 0f) then
                     if rightPressed then 
-                        player.CurrentVelocity <- Vector2.UnitX + Vector2.UnitY* player.CurrentVelocity.Y 
+                        playerMover.Velocity <- Vector2.UnitX + Vector2.UnitY* playerMover.Velocity.Y 
                     else
-                        player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
+                        playerMover.Velocity <- Vector2.UnitY * playerMover.Velocity.Y
             | Keys.S | Keys.K ->
                 downPressed <- false
-                if( player.CurrentVelocity.Y > 0f) then
+                if( playerMover.Velocity.Y > 0f) then
                     if upPressed then
-                        player.CurrentVelocity <- Vector2.UnitY * -1f + Vector2.UnitX* player.CurrentVelocity.X
+                        playerMover.Velocity <- Vector2.UnitY * -1f + Vector2.UnitX* playerMover.Velocity.X
                     else
-                        player.CurrentVelocity <- Vector2.UnitX * player.CurrentVelocity.X
+                        playerMover.Velocity <- Vector2.UnitX * playerMover.Velocity.X
             | Keys.D | Keys.L ->
                 rightPressed <- false
-                if( player.CurrentVelocity.X > 0f) then
+                if( playerMover.Velocity.X > 0f) then
                     if leftPressed then 
-                        player.CurrentVelocity <- Vector2.UnitX * -1f + Vector2.UnitY* player.CurrentVelocity.Y
+                        playerMover.Velocity <- Vector2.UnitX * -1f + Vector2.UnitY* playerMover.Velocity.Y
                     else
-                        player.CurrentVelocity <- Vector2.UnitY * player.CurrentVelocity.Y
+                        playerMover.Velocity <- Vector2.UnitY * playerMover.Velocity.Y
             | Keys.LeftShift -> 
                 shiftPressed <- false
-                player.Speed <- PlayerSpeedEval()
+                playerMover.Speed <- PlayerSpeedEval()
             | _ -> ()
             ())
 
@@ -158,7 +158,6 @@ type DanmakuGame (game, graphics) =
     override this.LoadContent() =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
 
-        dot <- this.Content.Load "1px"
         fira <- this.Content.Load "Fira Code"
 
         let world =
@@ -170,18 +169,22 @@ type DanmakuGame (game, graphics) =
                 .AddSystem(new BulletSpawnerSystem())
                 .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
                 .AddSystem(new Collision.CollisionSystem(playerBoundaries))
+                .AddSystem(new ConstrainedTransformSystem(playerBoundaries))
 
                 .Build ()
 
         let playerEntity = world.CreateEntity()
-        playerEntity.Attach player.Transform
+        playerEntity.Attach playerTransform
+        playerEntity.Attach playerMover
         playerEntity.Attach playerBulletSpawner
-        playerEntity.Attach (Collision.TransformCollisionActor(player.Transform, 5f, playerTag, 
+        playerEntity.Attach (Dot(Size2(10f,10f), Color.GreenYellow))
+        playerEntity.Attach (Collision.TransformCollisionActor(playerTransform, 5f, playerTag, 
             onCollision = (fun other -> 
                 if other.Tag = enemyTag then
-                    Console.WriteLine("hit player")
-                    ()
-                true
+                    player.HP <- player.HP - 10f
+                    Console.WriteLine $"hit player (hp: {player.HP})"
+                    
+                player.HP > 0f
             )))
 
         // Console.WriteLine "load enemy"
@@ -217,9 +220,6 @@ type DanmakuGame (game, graphics) =
         // TODO: tweener component or entity?
         tweener.Update dt
 
-        player.Update gameTime
-        player.ConstrainToFrame playerBoundaries
-
         base.Update gameTime
         ()
 
@@ -230,8 +230,6 @@ type DanmakuGame (game, graphics) =
 
         spriteBatch.FillRectangle (playerBoundaries, Color.DarkSalmon)
         // spriteBatch.DrawCircle(bulletTarget, 8, Color.AliceBlue, 5f)
-
-        player.Draw spriteBatch gameTime
 
         spriteBatch.DrawString (fira, "Danmaku", Vector2(800f, 100f), Color.WhiteSmoke);
 
