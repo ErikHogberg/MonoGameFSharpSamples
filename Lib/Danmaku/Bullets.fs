@@ -13,13 +13,10 @@ open MonoGame.Extended.Collisions
 open Tools
 open RenderSystem
 
-// open type System.MathF
-
 
 type Bullet(velocity: Vector2, target: Option<Transform2>) =
 
     let mutable velocity = velocity
-
     let mutable entered = false
 
     member this.Target = target
@@ -43,7 +40,6 @@ type BulletSystem (boundaries: RectangleF) =
 
     let mutable transformMapper: ComponentMapper<Transform2> = null
     let mutable bulletMapper: ComponentMapper<Bullet> = null
-
 
     override this.Initialize(mapperService: IComponentMapperService) =
         transformMapper <- mapperService.GetMapper<Transform2>()
@@ -155,7 +151,6 @@ type BulletSpawnerSystem () =
                     let size = 2f + random.NextSingle(4f)
                     let _ = this.CreateBullet transform.Position bulletSpawner.SpawnVelocity size bulletSpawner
                     ()
-                ()
             else
                 bulletSpawner.FiringTimer <- 0f
             

@@ -41,12 +41,26 @@ type DanmakuGame (game, graphics) =
     let playerTransform = Transform2(Vector2(300f, 600f))
     let playerBoundaries = RectangleF(Point2(600f, 50f), Size2(700f, 1000f))
     let playerMover = ConstrainedTransform ()
-    let playerBulletSpawner = BulletSpawner (
-        10f, 
-        Vector2.UnitY* -350f,
-        playerTag,
-        (fun other -> other.Tag <> enemyTag)
-    ) 
+    let playerBulletSpawners = [
+        BulletSpawner (
+            10f, 
+            Vector2.UnitY* -350f,
+            playerTag,
+            (fun other -> other.Tag <> enemyTag)
+        );
+        BulletSpawner (
+            10f, 
+            Vector2.UnitY* -350f + Vector2.UnitX * 100f,
+            playerTag,
+            (fun other -> other.Tag <> enemyTag)
+        );
+        BulletSpawner (
+            10f, 
+            Vector2.UnitY* -350f + Vector2.UnitX * -100f,
+            playerTag,
+            (fun other -> other.Tag <> enemyTag)
+        );
+    ] 
 
     let bulletTarget = CircleF(Point2(700f, 200f), 10f)
 
@@ -92,7 +106,8 @@ type DanmakuGame (game, graphics) =
 
             match args.Key with 
             | Keys.Z ->
-                playerBulletSpawner.Firing <- true
+                for playerBulletSpawner in playerBulletSpawners do
+                    playerBulletSpawner.Firing <- true
             | Keys.W | Keys.I ->
                 upPressed <- true
                 playerMover.Velocity <- Vector2.UnitY * -1f + Vector2.UnitX* playerMover.Velocity.X
@@ -116,7 +131,8 @@ type DanmakuGame (game, graphics) =
 
             match args.Key with 
             | Keys.Z ->
-                playerBulletSpawner.Firing <- false
+                for playerBulletSpawner in playerBulletSpawners do
+                    playerBulletSpawner.Firing <- false
                 // bullets1.Firing <- false
             | Keys.W | Keys.I ->
                 upPressed <- false
@@ -170,13 +186,15 @@ type DanmakuGame (game, graphics) =
                 .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
                 .AddSystem(new Collision.CollisionSystem(playerBoundaries))
                 .AddSystem(new ConstrainedTransformSystem(playerBoundaries))
+                .AddSystem(new TransformFollowerSystem ())
 
                 .Build ()
 
         let playerEntity = world.CreateEntity()
         playerEntity.Attach playerTransform
         playerEntity.Attach playerMover
-        playerEntity.Attach playerBulletSpawner
+        // for playerBulletSpawner in playerBulletSpawners do
+        playerEntity.Attach playerBulletSpawners.Head
         playerEntity.Attach (Dot(Size2(10f,10f), Color.GreenYellow))
         playerEntity.Attach (Collision.TransformCollisionActor(playerTransform, 5f, playerTag, 
             onCollision = (fun other -> 
@@ -186,6 +204,19 @@ type DanmakuGame (game, graphics) =
                     
                 player.HP > 0f
             )))
+
+        let leftShooter = world.CreateEntity()
+        leftShooter.Attach (Dot(Size2(10f,10f), Color.GreenYellow))
+        leftShooter.Attach playerBulletSpawners.Tail.Head
+        leftShooter.Attach (new TransformFollower (playerTransform, Vector2(50f, -20f)))
+        leftShooter.Attach (Transform2(playerTransform.Position))
+
+        let rightShooter = world.CreateEntity()
+        rightShooter.Attach (Dot(Size2(10f,10f), Color.GreenYellow))
+        rightShooter.Attach playerBulletSpawners.Tail.Tail.Head
+        rightShooter.Attach (new TransformFollower (playerTransform, Vector2(-50f, -20f)))
+        rightShooter.Attach (Transform2(playerTransform.Position))
+
 
         // Console.WriteLine "load enemy"
 

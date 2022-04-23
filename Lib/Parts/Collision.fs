@@ -42,19 +42,15 @@ type TransformCollisionActor
         transform: Transform2,
         radius: float32,
         tag: string,
-        ?data,
         ?onCollision: TransformCollisionActor -> bool
-        // ?collisionLayers: list<string>,
     ) =
 
     let transform = transform
     let radius = radius
     let tag = tag
-    let data = defaultArg data null
     // let collisionLayers = defaultArg collisionLayers []
     let onCollision = defaultArg onCollision (fun _ -> true)
 
-    member this.Data = data
     member this.Transform = transform
     member this.Radius with get () = radius
     // member this.CollisionLayers with get() = collisionLayers

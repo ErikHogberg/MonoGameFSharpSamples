@@ -180,10 +180,9 @@ type BoidsSystem (boundaries: EllipseF) =
                 for i in 1..(nearby.Count-1) do
                     let otherBoidEntry = nearby.[i]
                     let otherBoidActor = (otherBoidEntry.Target :?> Collision.TransformCollisionActor)
-                    let otherBoid = otherBoidActor.Data :?> Boid
                     let otherBoidTransform = otherBoidActor.Transform
 
-                    averageNearbyFacing <- averageNearbyFacing + otherBoid.Velocity.FastNormalizedCopy()
+                    // averageNearbyFacing <- averageNearbyFacing + otherBoid.Velocity.FastNormalizedCopy()
                     averageNearbyCenter <- averageNearbyCenter + otherBoidTransform.Position
                     averageNearbyDir <- averageNearbyDir + (otherBoidTransform.Position - transform.Position).FastNormalizedCopy()
                     
@@ -241,7 +240,7 @@ type BoidsSystem (boundaries: EllipseF) =
                 spawnCount <- spawnCount - 1
             else
                 // insert updated surviving entities into new quadtree
-                nextCollisionTree.Insert (QuadtreeData(Collision.TransformCollisionActor(transform, visualSize, "boid", boid)))
+                nextCollisionTree.Insert (QuadtreeData(Collision.TransformCollisionActor(transform, visualSize, "boid")))
                 ()
 
             // boid.Nearby <- []
