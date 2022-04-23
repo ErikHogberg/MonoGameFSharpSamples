@@ -190,6 +190,18 @@ type DanmakuGame (game, graphics) =
 
                 .Build ()
 
+        let leftShooter = world.CreateEntity()
+        leftShooter.Attach (Dot(Size2(10f,10f), Color.GreenYellow))
+        leftShooter.Attach playerBulletSpawners.Tail.Head
+        leftShooter.Attach (new TransformFollower (playerTransform, Vector2(50f, -20f)))
+        leftShooter.Attach (Transform2(playerTransform.Position))
+
+        let rightShooter = world.CreateEntity()
+        rightShooter.Attach (Dot(Size2(10f,10f), Color.GreenYellow))
+        rightShooter.Attach playerBulletSpawners.Tail.Tail.Head
+        rightShooter.Attach (new TransformFollower (playerTransform, Vector2(-50f, -20f)))
+        rightShooter.Attach (Transform2(playerTransform.Position))
+
         let playerEntity = world.CreateEntity()
         playerEntity.Attach playerTransform
         playerEntity.Attach playerMover
@@ -202,20 +214,15 @@ type DanmakuGame (game, graphics) =
                     player.HP <- player.HP - 10f
                     Console.WriteLine $"hit player (hp: {player.HP})"
                     
-                player.HP > 0f
+                let dead = player.HP <= 0f
+                if dead then
+                    world.DestroyEntity leftShooter
+                    world.DestroyEntity rightShooter
+                    ()
+
+                not dead
             )))
 
-        let leftShooter = world.CreateEntity()
-        leftShooter.Attach (Dot(Size2(10f,10f), Color.GreenYellow))
-        leftShooter.Attach playerBulletSpawners.Tail.Head
-        leftShooter.Attach (new TransformFollower (playerTransform, Vector2(50f, -20f)))
-        leftShooter.Attach (Transform2(playerTransform.Position))
-
-        let rightShooter = world.CreateEntity()
-        rightShooter.Attach (Dot(Size2(10f,10f), Color.GreenYellow))
-        rightShooter.Attach playerBulletSpawners.Tail.Tail.Head
-        rightShooter.Attach (new TransformFollower (playerTransform, Vector2(-50f, -20f)))
-        rightShooter.Attach (Transform2(playerTransform.Position))
 
 
         // Console.WriteLine "load enemy"
