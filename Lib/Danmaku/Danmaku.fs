@@ -106,6 +106,8 @@ type DanmakuGame (game, graphics) =
 
             match args.Key with 
             | Keys.Z ->
+                // TODO: sticky firing, always fire for a minimum time even if released
+                // IDEA: implement in bullet spawner system, making firing settings per component
                 for playerBulletSpawner in playerBulletSpawners do
                     playerBulletSpawner.Firing <- true
             | Keys.W | Keys.I ->
@@ -183,6 +185,7 @@ type DanmakuGame (game, graphics) =
 
                 .AddSystem(new BulletSystem(playerBoundaries))
                 .AddSystem(new BulletSpawnerSystem())
+                .AddSystem(new EnemySpawnerSystem ())
                 .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
                 .AddSystem(new Collision.CollisionSystem(playerBoundaries))
                 .AddSystem(new ConstrainedTransformSystem(playerBoundaries))
@@ -226,6 +229,10 @@ type DanmakuGame (game, graphics) =
 
 
         // Console.WriteLine "load enemy"
+
+        let enemySpawner = world.CreateEntity ()
+        enemySpawner.Attach (new EnemySpawner(5f, 4u))
+        enemySpawner.Attach (new Transform2(Vector2(800f, 100f)))
 
         let enemyEntity = world.CreateEntity()
         let enemyTransform = Transform2(bulletTarget.Position.ToVector())

@@ -8,6 +8,7 @@ open MonoGame.Extended.Entities
 open MonoGame.Extended.Entities.Systems
 
 open Tools
+open RenderSystem
 
 type Enemy()=
     let mutable hp = 100f
@@ -60,20 +61,22 @@ type EnemySystem (boundaries: RectangleF) =
     
     type EnemySpawner (time: float32, maxCount: uint) =
 
-        
+        let mutable count = 0u        
         let mutable timer = 0f
 
         member this.Time = time
+        // member this.Count with get() = count and set(value) = count <- value
+        member this.IncrementCount () = count <- count + 1u
+        member this.DecrementCount () = if count > 0u then count <- count - 1u
+        member this.SpawnAllowed () = count < maxCount
         member this.MaxCount = maxCount
         member this.TimerExpired () = timer < 0f
         member this.DecrementTimer time = timer <- timer - time
         member this.IncrementTimer () = timer <- timer + time
-        
 
-    type EnemySpawnerSystem (boundaries: RectangleF) =
+
+    type EnemySpawnerSystem () =
         inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<EnemySpawner>))
-
-        let boundaries = boundaries
 
         // mappers for accessing components
 
@@ -94,12 +97,23 @@ type EnemySystem (boundaries: RectangleF) =
 
                 enemySpawner.DecrementTimer dt
                 while enemySpawner.TimerExpired () do
-                    enemySpawner.IncrementTimer ()
-                    let newEnemy = this.CreateEntity ()
-                    newEnemy.Attach (Enemy ())
-                    newEnemy.Attach (Transform2 transform.Position)
-                    // TODO: collision
-                    // TODO: bullet spawner
+                    if enemySpawner.SpawnAllowed () then
+                        enemySpawner.IncrementCount ()
+                        enemySpawner.IncrementTimer ()
+                        let newEnemy = this.CreateEntity ()
+                        newEnemy.Attach (Enemy ())
+                        newEnemy.Attach (Dot(Size2(20f,15f), Color.AliceBlue))
+                        let newTransform = Transform2 transform.Position
+                        // System.Console.WriteLine $"spawned new enemy at {newTransform.Position}"
+                        newEnemy.Attach newTransform
+                        newEnemy.Attach(Collision.TransformCollisionActor(newTransform, 5f, "enemy", 
+                            onCollision = (fun other -> 
+                            let dead = other.Tag = "player"
+                            if dead then
+                                enemySpawner.DecrementCount ()
+                            not dead
+                        )))
+                        // TODO: bullet spawner
                     ()
 
 
