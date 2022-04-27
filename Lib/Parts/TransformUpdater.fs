@@ -73,44 +73,33 @@ type TransformFollowerSystem () =
 
             transform.Position <- transform.Position.MoveTowards(mover.Target.Position + mover.offset, mover.Speed * dt)
 
-type TweenMover(target: Transform2, easingFn ) =
+type TweenMover(transform: Transform2, target: Vector2, duration, repeatDelay, easingFn: float32 -> float32 ) =
+
 
     let tweener = new Tweener()
 
-    // TODO: implement
+    let _ = 
+        tweener.TweenTo(transform, 
+        (fun player -> transform.Position), target, duration, 0f)
+            .RepeatForever(repeatDelay) 
+            .AutoReverse()
+            .Easing(easingFn)
 
-    // do tweener.TweenTo(_player, (fun player -> player.Position, toValue= Vector2(550, 50)), 2f, 1f)
-    //             .RepeatForever(repeatDelay: 0.2f)
-    //             .AutoReverse()
-    //             .Easing(EasingFunctions.Linear)
-
-    // let mutable velocity = Vector2.Zero
-    let mutable speed = 300f
-
-
-    // let target = target
-
-    // member this.Velocity with get () = velocity and set(value) = velocity <- value
-    member this.Speed with get () = speed and set(value) = speed <- value
-    member this.Target with get () = target
+    member this.Tweener = tweener
 
 type TweenMoverSystem () =
-    inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<TweenMover>))
+    inherit EntityUpdateSystem(Aspect.All(typedefof<TweenMover>))
 
-    let mutable transformMapper: ComponentMapper<Transform2> = null
     let mutable moverMapper: ComponentMapper<TweenMover> = null
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        transformMapper <- mapperService.GetMapper<Transform2>()
         moverMapper <- mapperService.GetMapper<TweenMover>()
 
     override this.Update(gameTime: GameTime) =
         let dt = gameTime.GetElapsedSeconds()
 
         for entityId in this.ActiveEntities do
-            let transform = transformMapper.Get(entityId)
             let mover = moverMapper.Get(entityId)
+            mover.Tweener.Update dt
+            ()  
 
-            // IDEA: accelerate towards target instead
-
-            transform.Position <- transform.Position.MoveTowards(mover.Target.Position, mover.Speed * dt)

@@ -119,8 +119,8 @@ type EnemySystem (boundaries: RectangleF) =
                             "enemy", 
                             fun other -> 
                                 let hit = other.Tag = "player"
-                                if hit then
-                                    System.Console.WriteLine "enemy bullet hit"
+                                // if hit then
+                                    // System.Console.WriteLine "enemy bullet hit"
                                 not hit
                             )
                         spawner.Firing <- true

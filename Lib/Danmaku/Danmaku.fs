@@ -191,6 +191,7 @@ type DanmakuGame (game, graphics) =
 
                 .AddSystem(new ConstrainedTransformSystem(playerBoundaries))
                 .AddSystem(new TransformFollowerSystem ())
+                .AddSystem(new TweenMoverSystem())
 
                 .Build ()
 
@@ -233,7 +234,10 @@ type DanmakuGame (game, graphics) =
 
         let enemySpawner = world.CreateEntity ()
         enemySpawner.Attach (new EnemySpawner(5f, 4u))
-        enemySpawner.Attach (new Transform2(Vector2(800f, 100f)))
+        let enemySpawnerTransform = new Transform2(Vector2(800f, 100f))
+        enemySpawner.Attach enemySpawnerTransform
+        enemySpawner.Attach (new TweenMover(enemySpawnerTransform, Vector2(1200f,100f), 2f, 0f, EasingFunctions.CircleInOut))
+        enemySpawner.Attach (Dot(Size2(5f,5f), Color.Aquamarine))
 
         // let enemyEntity = world.CreateEntity()
         // let enemyTransform = Transform2(bulletTarget.Position.ToVector())
