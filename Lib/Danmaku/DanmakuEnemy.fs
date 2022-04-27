@@ -113,7 +113,18 @@ type EnemySystem (boundaries: RectangleF) =
                                 enemySpawner.DecrementCount ()
                             not dead
                         )))
-                        // TODO: bullet spawner
+                        let spawner = Bullets.BulletSpawner(
+                            3f, 
+                            Vector2.UnitY * 150f, 
+                            "enemy", 
+                            fun other -> 
+                                let hit = other.Tag = "player"
+                                if hit then
+                                    System.Console.WriteLine "enemy bullet hit"
+                                not hit
+                            )
+                        spawner.Firing <- true
+                        newEnemy.Attach spawner 
                     ()
 
 

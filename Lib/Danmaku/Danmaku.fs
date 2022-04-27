@@ -64,7 +64,7 @@ type DanmakuGame (game, graphics) =
 
     let bulletTarget = CircleF(Point2(700f, 200f), 10f)
 
-    let tweener = new Tweener()
+    // let tweener = new Tweener()
 
     let mutable mouseListener = MouseListener()
     let mutable touchListener = TouchListener()
@@ -84,7 +84,7 @@ type DanmakuGame (game, graphics) =
         else
             playerSpeed
 
-    do playerMover.Speed <- PlayerSpeedEval()
+    do playerMover.Speed <- PlayerSpeedEval ()
 
     override this.Initialize() =
         
@@ -180,14 +180,15 @@ type DanmakuGame (game, graphics) =
 
         let world =
             WorldBuilder()
-                
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, camera))
+                .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
 
                 .AddSystem(new BulletSystem(playerBoundaries))
                 .AddSystem(new BulletSpawnerSystem())
                 .AddSystem(new EnemySpawnerSystem ())
-                .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
+
                 .AddSystem(new Collision.CollisionSystem(playerBoundaries))
+
                 .AddSystem(new ConstrainedTransformSystem(playerBoundaries))
                 .AddSystem(new TransformFollowerSystem ())
 
@@ -234,52 +235,39 @@ type DanmakuGame (game, graphics) =
         enemySpawner.Attach (new EnemySpawner(5f, 4u))
         enemySpawner.Attach (new Transform2(Vector2(800f, 100f)))
 
-        let enemyEntity = world.CreateEntity()
-        let enemyTransform = Transform2(bulletTarget.Position.ToVector())
-        enemyEntity.Attach enemyTransform
-        enemyEntity.Attach (Collision.TransformCollisionActor(enemyTransform, bulletTarget.Radius, enemyTag, 
-            onCollision = (fun other -> other.Tag <> playerTag)))
-        enemyEntity.Attach (Dot(Size2(20f,15f), Color.AliceBlue))
-        let enemyBulletSpawner = BulletSpawner (
-            3f, 
-            Vector2.UnitY* 150f,
-            enemyTag,
-            (fun other -> 
-                let hit = other.Tag = playerTag
-                if hit then
-                    Console.WriteLine "enemy bullet hit"
-                not hit
-            )
-        )
-        enemyBulletSpawner.Firing <- true
-        enemyEntity.Attach enemyBulletSpawner
+        // let enemyEntity = world.CreateEntity()
+        // let enemyTransform = Transform2(bulletTarget.Position.ToVector())
+        // enemyEntity.Attach enemyTransform
+        // enemyEntity.Attach (Collision.TransformCollisionActor(enemyTransform, bulletTarget.Radius, enemyTag, 
+        //     onCollision = (fun other -> other.Tag <> playerTag)))
+        // enemyEntity.Attach (Dot(Size2(20f,15f), Color.AliceBlue))
+        // let enemyBulletSpawner = BulletSpawner (
+        //     3f, 
+        //     Vector2.UnitY* 150f,
+        //     enemyTag,
+        //     (fun other -> 
+        //         let hit = other.Tag = playerTag
+        //         if hit then
+        //             Console.WriteLine "enemy bullet hit"
+        //         not hit
+        //     )
+        // )
+        // enemyBulletSpawner.Firing <- true
+        // enemyEntity.Attach enemyBulletSpawner
 
         this.Components.Add (world)
 
         base.LoadContent ()
-        ()
 
-    override this.Update(gameTime) =
-        let dt = gameTime.GetElapsedSeconds()
-
-        // TODO: tweener component or entity?
-        tweener.Update dt
-
-        base.Update gameTime
-        ()
 
     override this.Draw(gameTime) =
         this.GraphicsDevice.Clear Color.PaleVioletRed
 
         spriteBatch.Begin (transformMatrix = camera.GetViewMatrix())
-
         spriteBatch.FillRectangle (playerBoundaries, Color.DarkSalmon)
-        // spriteBatch.DrawCircle(bulletTarget, 8, Color.AliceBlue, 5f)
-
         spriteBatch.DrawString (fira, "Danmaku", Vector2(800f, 100f), Color.WhiteSmoke);
 
         spriteBatch.End ()
 
         base.Draw gameTime
-        ()
 
