@@ -14,8 +14,8 @@ type Enemy()=
     let mutable hp = 100f
     let mutable entered = false
     
-    member this.HP with get () = hp and set (value) = hp <-value
-    member this.Entered with get () = entered and set (value) = entered <-value
+    member this.HP with get () = hp and set (value) = hp <- value
+    member this.Entered with get () = entered and set (value) = entered <- value
     
 type EnemySystem (boundaries: RectangleF) =
     inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<Enemy>))
@@ -29,23 +29,23 @@ type EnemySystem (boundaries: RectangleF) =
 
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        transformMapper <- mapperService.GetMapper<Transform2>()
-        bulletMapper <- mapperService.GetMapper<Enemy>()
+        transformMapper <- mapperService.GetMapper()
+        bulletMapper <- mapperService.GetMapper()
         ()
 
     override this.Update(gameTime: GameTime) =
-        let dt = gameTime.GetElapsedSeconds()
+        let dt = gameTime.GetElapsedSeconds ()
 
         for entityId in this.ActiveEntities do
-            let transform = transformMapper.Get(entityId)
-            let bullet = bulletMapper.Get(entityId)
+            let transform = transformMapper.Get entityId
+            let bullet = bulletMapper.Get entityId
 
             // check if bullet is inside the render boundary
-            let inBoundary = boundaries.Contains(transform.Position.ToPoint2())
+            let inBoundary = boundaries.Contains transform.Position.ToPoint2
 
             if bullet.Entered && (not inBoundary) then
                 // despawn bullet if it left the boundary
-                this.DestroyEntity(entityId)
+                this.DestroyEntity entityId
             else
                 // mark enemy as having entered boundary
                 if inBoundary then
@@ -85,11 +85,11 @@ type EnemySystem (boundaries: RectangleF) =
 
 
         override this.Initialize(mapperService: IComponentMapperService) =
-            transformMapper <- mapperService.GetMapper<Transform2>()
-            enemySpawnerMapper <- mapperService.GetMapper<EnemySpawner>()
+            transformMapper <- mapperService.GetMapper()
+            enemySpawnerMapper <- mapperService.GetMapper()
 
         override this.Update(gameTime: GameTime) =
-            let dt = gameTime.GetElapsedSeconds()
+            let dt = gameTime.GetElapsedSeconds ()
 
             for entityId in this.ActiveEntities do
                 let transform = transformMapper.Get entityId
@@ -100,12 +100,17 @@ type EnemySystem (boundaries: RectangleF) =
                     if enemySpawner.SpawnAllowed () then
                         enemySpawner.IncrementCount ()
                         enemySpawner.IncrementTimer ()
+                        
                         let newEnemy = this.CreateEntity ()
-                        newEnemy.Attach (Enemy ())
-                        newEnemy.Attach (Dot(Size2(20f,15f), Color.AliceBlue))
+                        
+                        newEnemy.Attach <| Enemy ()
+                        newEnemy.Attach <| Dot Color.AliceBlue
+                        newEnemy.Attach <| SizeComponent(20f,15f)
+
                         let newTransform = Transform2 transform.Position
                         // System.Console.WriteLine $"spawned new enemy at {newTransform.Position}"
                         newEnemy.Attach newTransform
+                        
                         newEnemy.Attach(Collision.TransformCollisionActor(newTransform, 5f, "enemy", 
                             onCollision = (fun other -> 
                             let dead = other.Tag = "player"
@@ -113,6 +118,7 @@ type EnemySystem (boundaries: RectangleF) =
                                 enemySpawner.DecrementCount ()
                             not dead
                         )))
+                        
                         let spawner = Bullets.BulletSpawner(
                             3f, 
                             Vector2.UnitY * 150f, 

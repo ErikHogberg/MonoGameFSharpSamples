@@ -13,6 +13,7 @@ open MonoGame.Extended.Collisions
 open Tools
 
 open type System.MathF
+open RenderSystem
 
 // Boids system where entites are pulled towards a defined point, but with flocking behaviour affecting their path to the target
 // Shows using quadtrees to make the entities spatially aware of eachother, like a collision broad-phase
@@ -82,7 +83,7 @@ type BoidsSystem (boundaries: EllipseF) =
     let mutable spawnSpeed = 100f
 
     // size of random spawn box
-    let spawnOffsetRange = Vector2(MathHelper.Max(boundaries.RadiusX, boundaries.RadiusY), 50f)
+    let spawnOffsetRange = Point2(MathHelper.Max(boundaries.RadiusX, boundaries.RadiusY), 50f)
 
     // limit on boids active at same time
     let mutable spawnCount = 0
@@ -129,19 +130,20 @@ type BoidsSystem (boundaries: EllipseF) =
             ).Rotate(spawnAngle)
 
     member this.SpawnRange () = 
-        let center = Point2(-spawnOffsetRange.X, -spawnOffsetRange.Y)
-        RectangleF(center , (spawnOffsetRange * 2f).ToSize())    
+        let center = spawnOffsetRange.Inverse
+        RectangleF(center, spawnOffsetRange.ToSize * 2f)    
         // RectangleF(spawnOffsetRange, (spawnOffsetRange * 2f).ToSize())
 
     //
 
     member this.CreateBoid (position: Vector2) velocity size =
-        let entity = this.CreateEntity()
-        let transform = Transform2(position)
+        let entity = this.CreateEntity ()
+        let transform = Transform2 position
         let boid = Boid(velocity, size, random.NextSingle(20f, 30f))
-        entity.Attach(transform)
-        entity.Attach(boid)
-        entity.Attach(RenderSystem.Dot(size, Color.Orange))
+        entity.Attach<| transform
+        entity.Attach<| boid
+        entity.Attach<| Dot Color.Orange
+        entity.Attach<| SizeComponent size
         spawnCount <- spawnCount + 1
         entity.Id
 
@@ -157,11 +159,11 @@ type BoidsSystem (boundaries: EllipseF) =
         let nextCollisionTree = Quadtree collisionTreeBounds
         
         for entityId in this.ActiveEntities do
-            let transform = transformMapper.Get(entityId)
-            let boid = boidMapper.Get(entityId)
+            let transform = transformMapper.Get entityId
+            let boid = boidMapper.Get entityId
 
             // get all neighbor entities in "visual" range
-            let nearby = collisionTree.Query(CircleF(transform.Position.ToPoint2(), visualRange))
+            let nearby = collisionTree.Query <| CircleF(transform.Position.ToPoint2, visualRange)
 
             if nearby.Count > 0 then
 
@@ -179,7 +181,7 @@ type BoidsSystem (boundaries: EllipseF) =
 
                 for i in 1..(nearby.Count-1) do
                     let otherBoidEntry = nearby.[i]
-                    let otherBoidActor = (otherBoidEntry.Target :?> Collision.TransformCollisionActor)
+                    let otherBoidActor = otherBoidEntry.Target :?> Collision.TransformCollisionActor
                     let otherBoidTransform = otherBoidActor.Transform
 
                     // averageNearbyFacing <- averageNearbyFacing + otherBoid.Velocity.FastNormalizedCopy()
@@ -188,12 +190,12 @@ type BoidsSystem (boundaries: EllipseF) =
                     
                     ()
 
-                averageNearbyFacing <- averageNearbyFacing / (float32 nearby.Count)
-                averageNearbyCenter <- averageNearbyCenter / (float32 nearby.Count)
-                averageNearbyDir <- averageNearbyDir / (float32 nearby.Count)
+                let nearbyCountF = float32 nearby.Count
+                averageNearbyFacing <- averageNearbyFacing / nearbyCountF
+                averageNearbyCenter <- averageNearbyCenter / nearbyCountF
+                averageNearbyDir <- averageNearbyDir / nearbyCountF
 
             
-
                 // flocking behaviour
 
                 // TODO: toggle behaviours depending on distance to nearby
@@ -220,7 +222,7 @@ type BoidsSystem (boundaries: EllipseF) =
                         
 
             // pull velocity towards gravity target
-            boid.Velocity <- boid.Velocity + Vector2.Normalize(target.Position.ToVector() - transform.Position) * target.Radius * targetSteerMul
+            boid.Velocity <- boid.Velocity + Vector2.Normalize(target.Position.ToVector - transform.Position) * target.Radius * targetSteerMul
 
             // cap velocity
             if boid.Velocity.LengthSquared() > velocityCap ** 2f then
@@ -259,7 +261,8 @@ type BoidsSystem (boundaries: EllipseF) =
         spawnDelay <- spawnDelay - dt
 
         // TODO: make frame-indipendent
-        if spawnDelay <= 0f then
+
+        while spawnDelay <= 0f do
 
             // calculate current spawn velocity and spawn box position using accessors
             let spawnVelocity = this.SpawnVelocity(random.NextSingle(MathHelper.TwoPi), random.NextSingle(-50f, 10f) + spawnSpeed)
@@ -279,7 +282,7 @@ type BoidsSystem (boundaries: EllipseF) =
                 ()
 
             // spawn delay is randomized on each expiration
-            spawnDelay <- random.NextSingle(MinSpawnDelay, MaxSpawnDelay)
+            spawnDelay <- spawnDelay + random.NextSingle(MinSpawnDelay, MaxSpawnDelay)
 
         ()
 

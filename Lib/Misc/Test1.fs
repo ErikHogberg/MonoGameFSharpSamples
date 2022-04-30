@@ -56,7 +56,7 @@ type TestGame1 (game, graphics) =
         dot <- this.Content.Load "1px"
         fira <- this.Content.Load "Fira Code"
 
-        boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center.ToVector(), 300f, 450f))
+        boids1 <- new BoidsSystem(EllipseF(boidsTarget.Center.ToVector, 300f, 450f))
         boids1.Target <- boidsTarget
 
 

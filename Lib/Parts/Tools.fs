@@ -44,12 +44,15 @@ module Singleton =
     let Instance = Product()
 
 type Point2 with
-    member this.ToVector() = Vector2(this.X, this.Y)
+    member this.ToVector = Vector2(this.X, this.Y)
+    member this.ToSize = Size2(this.X, this.Y)
+    member this.Inverse = Point2.Zero - this
 type Size2 with
     member this.ToVector() = Vector2(this.Width, this.Height)
+    static member Square size = Size2(size, size)
 
 type Vector2 with
-    member this.ToPoint2() = Point2(this.X, this.Y)
+    member this.ToPoint2 = Point2(this.X, this.Y)
 
     // fast approximation of normalized vector
     member this.FastNormalizedCopy () =
@@ -97,6 +100,6 @@ type Vector2 with
         if maxDistance < 0f && this = target then
             emergencyDir.FastNormalizedCopy() * maxDistance
         else
-            this.MoveTowards( target, maxDistance)
+            this.MoveTowards (target, maxDistance)
         
 

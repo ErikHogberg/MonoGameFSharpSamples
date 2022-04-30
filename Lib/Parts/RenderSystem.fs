@@ -23,21 +23,21 @@ type SpriteRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCame
     let mutable spriteMapper: ComponentMapper<Sprite> = null
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        transformMapper <- mapperService.GetMapper<Transform2>()
-        spriteMapper <- mapperService.GetMapper<Sprite>()
+        transformMapper <- mapperService.GetMapper()
+        spriteMapper <- mapperService.GetMapper()
         ()
 
     override this.Draw(gameTime: GameTime) =
         let transformMatrix = camera.GetViewMatrix()
 
-        spriteBatch.Begin(transformMatrix = transformMatrix)
+        spriteBatch.Begin (transformMatrix = transformMatrix)
 
         for entityId in this.ActiveEntities do
             let transform = transformMapper.Get entityId
             let sprite = spriteMapper.Get entityId
-            spriteBatch.Draw(sprite, transform)
+            spriteBatch.Draw (sprite, transform)
 
-        spriteBatch.End()
+        spriteBatch.End ()
         ()
 
 
@@ -54,8 +54,8 @@ type EllipseRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCam
     let mutable ellipseMapper: ComponentMapper<EllipseF> = null
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        transformMapper <- mapperService.GetMapper<Transform2>()
-        ellipseMapper <- mapperService.GetMapper<EllipseF>()
+        transformMapper <- mapperService.GetMapper()
+        ellipseMapper <- mapperService.GetMapper()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -65,26 +65,30 @@ type EllipseRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCam
 
         for entityId in this.ActiveEntities do
             let transform = transformMapper.Get entityId
-            let sprite = ellipseMapper.Get entityId
+            let ellipse = ellipseMapper.Get entityId
             // spriteBatch.Draw(sprite, transform)
             // TODO: apply transform
-            spriteBatch.DrawEllipse(sprite.Center, Vector2( sprite.RadiusX, sprite.RadiusY),16, Color.Gold)
+            spriteBatch.DrawEllipse (ellipse.Center, Vector2(ellipse.RadiusX, ellipse.RadiusY),16, Color.Gold)
             ()
 
         spriteBatch.End()
         ()
 
-type Dot (size: Size2, color: Color) =
+type Dot (color: Color) =
+    let mutable color = color
+    member this.Color with get () = color and set(value) = color <- value
 
-    new (size:float32, color:Color) =
-        Dot (Size2(size,size), color)
+type SizeComponent(size) =
+    member this.Size: Size2 = size
+    new (width, height) = SizeComponent(Size2(width,height))
+    new (size) = SizeComponent(Size2(size,size))
 
-    member this.Size = size
-    member this.Color = color
+// type ColorComponent(color) =
+//     member this.Color: Color = color
 
 type DotRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera) =
     inherit EntityDrawSystem(Aspect
-        .All(typedefof<Transform2>, typedefof<Dot>)
+        .All(typedefof<Transform2>, typedefof<Dot>, typedefof<SizeComponent> )
         )
 
     let graphicsDevice = graphicsDevice
@@ -93,10 +97,12 @@ type DotRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera)
 
     let mutable transformMapper: ComponentMapper<Transform2> = null
     let mutable dotMapper: ComponentMapper<Dot> = null
+    let mutable sizeMapper: ComponentMapper<SizeComponent> = null
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        transformMapper <- mapperService.GetMapper<Transform2>()
-        dotMapper <- mapperService.GetMapper<Dot>()
+        transformMapper <- mapperService.GetMapper()
+        dotMapper <- mapperService.GetMapper()
+        sizeMapper <- mapperService.GetMapper()
         ()
 
     override this.Draw(gameTime: GameTime) =
@@ -107,8 +113,10 @@ type DotRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera)
         for entityId in this.ActiveEntities do
             let transform = transformMapper.Get entityId
             let dot = dotMapper.Get entityId
-            spriteBatch.FillRectangle(transform.Position - dot.Size.ToVector(), dot.Size * 2f, dot.Color)
+            let size = (sizeMapper.Get entityId).Size
+            
+            spriteBatch.FillRectangle (transform.Position - size.ToVector(), size * 2f, dot.Color)
             ()
 
-        spriteBatch.End()
+        spriteBatch.End ()
         ()

@@ -16,6 +16,7 @@ open MonoGame.Extended.Tweening
 open RenderSystem
 open GameScreenWithComponents
 open Asteroids
+open TransformUpdater
 
 type SpaceGame(game, graphics) =
     inherit GameScreenWithComponents(game, graphics)
@@ -48,14 +49,6 @@ type SpaceGame(game, graphics) =
 
         camera <- OrthographicCamera(viewportAdapter)
 
-        let easingFn =  Func<float32, float32>(EasingFunctions.QuadraticIn)
-
-        let tween = 
-            tweener.TweenTo(bubble, (fun bubble -> bubble.RadiusX), 100f, 1f, 1f)
-                .RepeatForever(0.5f)
-                .AutoReverse()
-                .Easing(easingFn)
-
         let listenerComponent =
             new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
 
@@ -67,11 +60,11 @@ type SpaceGame(game, graphics) =
                 ()
             ())
 
-        base.Initialize()
+        base.Initialize ()
         ()
 
-    override this.LoadContent() =
-        spriteBatch <- new SpriteBatch(this.GraphicsDevice)
+    override this.LoadContent () =
+        spriteBatch <- new SpriteBatch (this.GraphicsDevice)
 
         dot <- this.Content.Load "1px"
         fira <- this.Content.Load "Fira Code"
@@ -80,6 +73,13 @@ type SpaceGame(game, graphics) =
         asteroids1.Bubble <- bubble
 
         asteroidsRenderSystem <- new AsteroidRenderSystem(this.GraphicsDevice, camera)
+
+        let easingFn = EasingFunctions.QuadraticIn
+        let _ = 
+            tweener.TweenTo(bubble, (fun bubble -> bubble.RadiusX), 100f, 1f, 1f)
+                .RepeatForever(0.5f)
+                .AutoReverse()
+                .Easing(easingFn)
 
         let world =
             WorldBuilder()
@@ -90,30 +90,29 @@ type SpaceGame(game, graphics) =
                 .AddSystem(new AsteroidExpirySystem())
                 .AddSystem(asteroidsRenderSystem)
 
+                .AddSystem(new TweenTransformerSystem())
+
                 .Build()
 
         this.Components.Add(world)
 
-        let testEntity = world.CreateEntity()
-        testEntity.Attach(Transform2(100f, 300f, 0f, 100f, 100f))
-        let dotSprite = Sprite(dot)
+        let testEntity = world.CreateEntity ()
+        testEntity.Attach <| Transform2(100f, 300f, 0f, 100f, 100f)
+        let dotSprite = Sprite dot
         dotSprite.Color <- Color.Goldenrod
-        testEntity.Attach(dotSprite)
+        testEntity.Attach dotSprite
 
-        base.LoadContent()
-        ()
+        base.LoadContent ()
 
     override this.Update(gameTime) =
-        let dt = gameTime.GetElapsedSeconds()
+        let dt = gameTime.GetElapsedSeconds ()
 
-        // TODO: tweener component or entity?
-        tweener.Update(dt)
+        tweener.Update dt
 
-        asteroidAngle <- (asteroidAngle + dt * 0.15f) %  (MathF.PI*2f)
+        asteroidAngle <- (asteroidAngle + dt * 0.15f) % (MathF.PI * 2f)
         asteroids1.SpawnAngle <- asteroidAngle
 
         base.Update gameTime
-        ()
 
     override this.Draw(gameTime) =
         this.GraphicsDevice.Clear Color.Gray
@@ -125,20 +124,19 @@ type SpaceGame(game, graphics) =
         let pointOnBoundary = asteroids1.PointOnBoundary
         
         spriteBatch.DrawCircle(pointOnBoundary, 5f, 12, Color.Black)
-        let rect = asteroids1.SpawnRange()
-        let topleft =(Vector2(rect.TopLeft.X, rect.TopLeft.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
-        let topright=(Vector2(rect.TopRight.X, rect.TopRight.Y)).Rotate(asteroids1.SpawnAngle)  + pointOnBoundary
-        let bottomleft =(Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
-        let bottomright =(Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
+        let rect = asteroids1.SpawnRange ()
+        let topleft = (Vector2(rect.TopLeft.X, rect.TopLeft.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
+        let topright= (Vector2(rect.TopRight.X, rect.TopRight.Y)).Rotate(asteroids1.SpawnAngle)  + pointOnBoundary
+        let bottomleft = (Vector2(rect.BottomLeft.X, rect.BottomLeft.Y) ).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
+        let bottomright = (Vector2(rect.BottomRight.X, rect.BottomRight.Y)).Rotate(asteroids1.SpawnAngle) + pointOnBoundary
 
-        spriteBatch.DrawLine(topleft, topright, Color.Brown)
-        spriteBatch.DrawLine(topleft, bottomleft, Color.Brown)
-        spriteBatch.DrawLine(bottomright, topright, Color.Brown)
-        spriteBatch.DrawLine(bottomright, bottomleft, Color.Brown)
+        spriteBatch.DrawLine (topleft, topright, Color.Brown)
+        spriteBatch.DrawLine (topleft, bottomleft, Color.Brown)
+        spriteBatch.DrawLine (bottomright, topright, Color.Brown)
+        spriteBatch.DrawLine (bottomright, bottomleft, Color.Brown)
 
-        spriteBatch.DrawString(fira, "Space Game", Vector2(600f, 100f), Color.WhiteSmoke);
+        spriteBatch.DrawString (fira, "Space Game", Vector2(600f, 100f), Color.WhiteSmoke);
 
-        spriteBatch.End()
+        spriteBatch.End ()
 
         base.Draw gameTime
-        ()

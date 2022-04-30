@@ -42,30 +42,29 @@ type BulletSystem (boundaries: RectangleF) =
     let mutable bulletMapper: ComponentMapper<Bullet> = null
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        transformMapper <- mapperService.GetMapper<Transform2>()
-        bulletMapper <- mapperService.GetMapper<Bullet>()
+        transformMapper <- mapperService.GetMapper ()
+        bulletMapper <- mapperService.GetMapper ()
         ()
 
     override this.Update(gameTime: GameTime) =
         let dt = gameTime.GetElapsedSeconds()
 
         for entityId in this.ActiveEntities do
-            let transform = transformMapper.Get(entityId)
-            let bullet = bulletMapper.Get(entityId)
+            let transform = transformMapper.Get entityId
+            let bullet = bulletMapper.Get entityId
 
             // check if bullet is inside the render boundary
-            let inBoundary = boundaries.Contains(transform.Position.ToPoint2())
+            let inBoundary = boundaries.Contains transform.Position.ToPoint2
 
             if bullet.Entered && (not inBoundary) then
                 // despawn bullet if it left the boundary
-                this.DestroyEntity(entityId)
+                this.DestroyEntity entityId
             else
                 // mark bullet as having entered boundary
                 if inBoundary then
                     bullet.Entered <- true
 
                 // pull velocity towards gravity target
-                // TODO: check if despawning entities causes exception here
                 match bullet.Target with
                     | Some target ->
                         bullet.Velocity <- bullet.Velocity + Vector2.Normalize(target.Position - transform.Position) * 5f
@@ -121,14 +120,15 @@ type BulletSpawnerSystem () =
     let mutable transformMapper: ComponentMapper<Transform2> = null
     let mutable bulletMapper: ComponentMapper<BulletSpawner> = null
 
-    member this.CreateBullet (position: Vector2) velocity size (bulletSpawner: BulletSpawner) =
+    member this.CreateBullet (position: Vector2) velocity (size: float32) (bulletSpawner: BulletSpawner) =
         let entity = this.CreateEntity()
-        let transform = Transform2(position)
-        let bullet = Bullet(velocity, None)
+        let transform = Transform2 position
+        let bullet = Bullet (velocity, None)
         entity.Attach transform
         entity.Attach bullet
-        entity.Attach (Dot(Size2(size,size), Color.Black))
-        entity.Attach (Collision.TransformCollisionActor(transform, 5f, bulletSpawner.Tag, onCollision = bulletSpawner.OnCollision))
+        entity.Attach <| Dot Color.Black
+        entity.Attach <| SizeComponent size
+        entity.Attach <| Collision.TransformCollisionActor(transform, 5f, bulletSpawner.Tag, bulletSpawner.OnCollision)
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
@@ -138,7 +138,6 @@ type BulletSpawnerSystem () =
 
     override this.Update(gameTime: GameTime) =
         let dt = gameTime.GetElapsedSeconds()
-
 
         for entityId in this.ActiveEntities do
             let transform = transformMapper.Get(entityId)

@@ -19,6 +19,7 @@
     <Compile Include="SpaceTactics/Ship.fs" />
     <Compile Include="SpaceTactics/Asteroids.fs" />
     <Compile Include="Parts/Boids.fs" />
+    <Compile Include="Parts/UI.fs" />
     <Compile Include="Parts/GameScreenWithComponents.fs" />
     <Compile Include="Danmaku/Bullets.fs" />
     <Compile Include="Danmaku/DanmakuPlayer.fs" />

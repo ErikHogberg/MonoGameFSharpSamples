@@ -1,11 +1,8 @@
 module GameScreenWithComponents
 
-open Microsoft.Xna.Framework
-open Microsoft.Xna.Framework.Content
-open Microsoft.Xna.Framework.Graphics
-
-open MonoGame.Extended.Screens
 open System
+open Microsoft.Xna.Framework
+open MonoGame.Extended.Screens
 
 
 [<AbstractClass>]
@@ -17,10 +14,10 @@ type GameScreenWithComponents (game: Game, graphics: GraphicsDeviceManager) =
 
     let mutable drawables = List<IDrawable>.Empty
     let mutable updateables = List<IUpdateable>.Empty
-    let mutable components= new GameComponentCollection()
+    let mutable components= new GameComponentCollection ()
 
     // TODO: check if working
-    let rec remove (element : 'a, list: List<'a>, acc: list<'a>) =
+    let rec remove (element : 'a, list: List<'a>, acc: List<'a>) =
         if list.Head = element then
             list.Tail @ acc
         else
@@ -37,10 +34,10 @@ type GameScreenWithComponents (game: Game, graphics: GraphicsDeviceManager) =
     member this.Components with get () = components
 
 
-    member this.CategorizeComponents() =
-        this.DecategorizeComponents()
+    member this.CategorizeComponents () =
+        this.DecategorizeComponents ()
         for component1 in components do
-            this.CategorizeComponent(component1);
+            this.CategorizeComponent component1;
         
     member this.DecategorizeComponents() =
         updateables <- []
@@ -50,67 +47,67 @@ type GameScreenWithComponents (game: Game, graphics: GraphicsDeviceManager) =
         match component1 with
         | :? IUpdateable as a -> 
             // updateables <-  (component1 :?> IUpdateable) :: updateables
-            updateables <-  a :: updateables
+            updateables <- a :: updateables
         | _ -> ()
 
         // separate match for drawables in case component is both drawable and updateable
         match component1 with
         | :? IDrawable as b ->
-            drawables <-  b :: drawables
+            drawables <- b :: drawables
         | _ -> ()
     
         
     member this.DecategorizeComponent(component1: IGameComponent )=
         match component1 with
         | :? IUpdateable as a -> 
-            updateables <-  remove( a, updateables)
+            updateables <- remove( a, updateables)
         | _ -> ()
 
         match component1 with
         | :? IDrawable as b ->
-            drawables <-  remove(b, drawables)
+            drawables <-  remove (b, drawables)
         | _ -> ()
     
-    override this.Initialize() =
+    override this.Initialize () =
         for component1 in components do
-            component1.Initialize();
+            component1.Initialize ()
 
-        this.CategorizeComponents()
+        this.CategorizeComponents ()
 
         components.ComponentAdded.Add(
-            fun (e: GameComponentCollectionEventArgs) ->
+            fun e ->
                 e.GameComponent.Initialize()
-                this.CategorizeComponent(e.GameComponent)
+                this.CategorizeComponent e.GameComponent
                 ()
         )
         
         components.ComponentRemoved.Add(
-            fun (e: GameComponentCollectionEventArgs) ->
-                this.DecategorizeComponent(e.GameComponent)
+            fun e ->
+                this.DecategorizeComponent e.GameComponent
                 ()
         )
 
-        graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width;
-        graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height;
-        graphics.ApplyChanges();
+        graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width
+        graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height
+        graphics.ApplyChanges ()
         
         ()
 
-    override this.Dispose() =
+    override this.Dispose () =
         for component1 in components do
             let disposable = component1 :?> IDisposable
             if disposable <> null then
-                disposable.Dispose();
+                disposable.Dispose ()
         
         components <- null;
         ()
 
-    override this.Update(gameTime: GameTime) =
+    override this.Update gameTime =
         for updateable in updateables do
-            updateable.Update(gameTime)
+            updateable.Update gameTime
         ()
 
-    override this.Draw(gameTime: GameTime) =
+    override this.Draw gameTime =
         for drawable in drawables do
-            drawable.Draw(gameTime)
+            drawable.Draw gameTime
         ()
