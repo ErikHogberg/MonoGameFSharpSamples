@@ -37,7 +37,18 @@ type ButtonSystem () =
             let size = (sizeMapper.Get entityId).Size
 
             let rect = RectangleF(transform.Position, size)
+            
+            if rect.Contains hoverPos then
+                dot.Color <- Color.DarkBlue
+            else
+                dot.Color <- Color.DarkGray
 
-            
-            
+            match queuedClick with
+            | Some pos ->
+                if rect.Contains pos then
+                    button.OnClick  ()
+                    ()
+                ()
+            | None -> ()
+
             ()  

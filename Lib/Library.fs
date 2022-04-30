@@ -90,7 +90,7 @@ type Game1() as x =
             | Keys.D3 ->
                 screenManager.LoadScreen(new DebugScene(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Green, 0.5f))
             | Keys.D4 ->
-                screenManager.LoadScreen(new TestGame1(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
+                screenManager.LoadScreen(new Test1.TestGame1(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
             // | Keys.Space ->
                 // this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
             | _ -> ()

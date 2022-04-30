@@ -1,4 +1,4 @@
-namespace Danmaku
+namespace Test1
 
 open System
 
@@ -81,8 +81,6 @@ type TestGame1 (game, graphics) =
 
     override this.Update(gameTime) =
         let dt = gameTime.GetElapsedSeconds()
-
-        // TODO: tweener component or entity?
 
         spawnAngle <- (spawnAngle + dt * 0.15f) % (MathF.PI*2f)
         boids1.SpawnAngle <-  spawnAngle
