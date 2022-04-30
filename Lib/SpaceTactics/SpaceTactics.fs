@@ -34,8 +34,6 @@ type SpaceGame(game, graphics) =
 
     let mutable asteroidAngle = 0f
 
-    let tweener = new Tweener()
-
     let mouseListener = MouseListener()
     let touchListener = TouchListener()
     let kbdListener = KeyboardListener()
@@ -74,12 +72,6 @@ type SpaceGame(game, graphics) =
 
         asteroidsRenderSystem <- new AsteroidRenderSystem(this.GraphicsDevice, camera)
 
-        let easingFn = EasingFunctions.QuadraticIn
-        let _ = 
-            tweener.TweenTo(bubble, (fun bubble -> bubble.RadiusX), 100f, 1f, 1f)
-                .RepeatForever(0.5f)
-                .AutoReverse()
-                .Easing(easingFn)
 
         let world =
             WorldBuilder()
@@ -94,20 +86,26 @@ type SpaceGame(game, graphics) =
 
                 .Build()
 
-        this.Components.Add(world)
+        this.Components.Add (world)
 
         let testEntity = world.CreateEntity ()
-        testEntity.Attach <| Transform2(100f, 300f, 0f, 100f, 100f)
+        testEntity.Attach <| Transform2 (100f, 300f, 0f, 100f, 100f)
         let dotSprite = Sprite dot
         dotSprite.Color <- Color.Goldenrod
         testEntity.Attach dotSprite
+
+        let bubbleEntity = world.CreateEntity()
+        bubbleEntity.Attach <| TweenTransformer (TweenTransformer.StretchTweener( 
+            bubble, 
+            100f, 
+            0.5f, 
+            1f, 
+            EasingFunctions.QuadraticIn))
 
         base.LoadContent ()
 
     override this.Update(gameTime) =
         let dt = gameTime.GetElapsedSeconds ()
-
-        tweener.Update dt
 
         asteroidAngle <- (asteroidAngle + dt * 0.15f) % (MathF.PI * 2f)
         asteroids1.SpawnAngle <- asteroidAngle

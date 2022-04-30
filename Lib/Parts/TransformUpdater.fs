@@ -7,6 +7,8 @@ open MonoGame.Extended.Entities.Systems
 
 open Tools
 open MonoGame.Extended.Tweening
+open System.Linq.Expressions
+open System
 
 type ConstrainedTransform() =
     let mutable velocity = Vector2.Zero
@@ -74,27 +76,49 @@ type TransformFollowerSystem () =
             transform.Position <- transform.Position.MoveTowards(mover.Target.Position + mover.offset, mover.Speed * dt)
 
 
-type TweenTransformer(target, toTarget, duration, repeatDelay, moveFn, easingFn: float32 -> float32 ) =
-
-    let tweener = new Tweener()
-
-    let _ = 
-        tweener.TweenTo(
-            target, 
-            moveFn,
-            toTarget, 
-            duration, 
-            0f
-            )
-                .RepeatForever(repeatDelay) 
-                .AutoReverse()
-                .Easing(easingFn)
-
+type TweenTransformer(tweener: Tweener) =
     member this.Tweener = tweener
-    new (transform: Transform2, target: Vector2, duration, repeatDelay, easingFn: float32 -> float32 ) =
-        TweenTransformer(transform, target, duration, repeatDelay, (fun player -> transform.Position), easingFn)
-    // new (transform: Transform2, target: Vector2, duration, repeatDelay, easingFn: float32 -> float32 ) =
-        // TweenTransformer(transform, target, duration, repeatDelay, (fun player -> transform.Position), easingFn)
+    static member MoveTweener(
+        target: Transform2,
+        toTarget: Vector2,
+        duration, 
+        repeatDelay, 
+        easingFn: float32 -> float32 
+    ) =
+        let tweener = new Tweener()
+        let _ = 
+            tweener.TweenTo(
+                target, 
+                (fun (t) -> t.Position),
+                toTarget,
+                duration, 
+                0f
+                )
+                    .RepeatForever(repeatDelay) 
+                    .AutoReverse()
+                    .Easing(easingFn)
+        tweener
+
+    static member StretchTweener(
+        target: EllipseF,//: 'TTarget, 
+        toTarget: float32,//: 'TMember, 
+        duration, 
+        repeatDelay, 
+        easingFn: float32 -> float32 
+    ) =
+        let tweener = new Tweener()
+        let _ = 
+            tweener.TweenTo(
+                target, 
+                (fun (t) -> t.RadiusX),
+                toTarget,
+                duration, 
+                0f
+                )
+                    .RepeatForever(repeatDelay) 
+                    .AutoReverse()
+                    .Easing(easingFn)
+        tweener
 
 
 type TweenTransformerSystem () =

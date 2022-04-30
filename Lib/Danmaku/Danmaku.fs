@@ -228,7 +228,7 @@ type DanmakuGame (game, graphics) =
         enemySpawner.Attach <| EnemySpawner(5f, 4u)
         let enemySpawnerTransform = Transform2 (Vector2(800f, 100f))
         enemySpawner.Attach enemySpawnerTransform
-        enemySpawner.Attach <| TweenTransformer (enemySpawnerTransform, Vector2(1200f,100f), 2f, 0f, EasingFunctions.CircleInOut)
+        enemySpawner.Attach <| TweenTransformer (TweenTransformer.MoveTweener(enemySpawnerTransform, (Vector2(1200f,100f)), 2f, 0f, EasingFunctions.CircleInOut))
         enemySpawner.Attach <| Dot Color.Aquamarine
         enemySpawner.Attach <| SizeComponent 5f
 
