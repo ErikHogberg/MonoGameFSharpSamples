@@ -24,9 +24,7 @@ type DanmakuGame (game, graphics) =
     inherit GameScreenWithComponents (game, graphics)
 
     let mutable fira: SpriteFont = null
-
     let mutable camera: OrthographicCamera = null
-
     let mutable spriteBatch: SpriteBatch = null//Unchecked.defaultof<SpriteBatch>
 
     let playerTag = "player"
@@ -58,7 +56,7 @@ type DanmakuGame (game, graphics) =
             playerTag,
             playerBulletOnCollision
         );
-    ] 
+    ]
 
     let mouseListener = MouseListener ()
     let touchListener = TouchListener ()
@@ -161,7 +159,7 @@ type DanmakuGame (game, graphics) =
             | _ -> ()
             
         base.Initialize ()
-        
+
 
     override this.LoadContent () =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
@@ -228,7 +226,13 @@ type DanmakuGame (game, graphics) =
         enemySpawner.Attach <| EnemySpawner(5f, 4u)
         let enemySpawnerTransform = Transform2 (Vector2(800f, 100f))
         enemySpawner.Attach enemySpawnerTransform
-        enemySpawner.Attach <| TweenTransformer (TweenTransformer.MoveTweener(enemySpawnerTransform, (Vector2(1200f,100f)), 2f, 0f, EasingFunctions.CircleInOut))
+        enemySpawner.Attach <| TweenTransformer (TweenTransformer.MoveTweener(
+            enemySpawnerTransform, 
+            Vector2(1200f,100f), 
+            2f, 0f, 
+            EasingFunctions.CircleInOut, 
+            once = true
+        ))
         enemySpawner.Attach <| Dot Color.Aquamarine
         enemySpawner.Attach <| SizeComponent 5f
 

@@ -30,6 +30,9 @@ let InverseSqrt(x:float32) =
 
 type Point with
     member this.ToPoint2 = Point2(float32 this.X, float32 this.Y)
+    member this.ToVector = this.ToVector2 ()
+    member this.ScreenToWorld (camera: OrthographicCamera): Vector2= 
+        camera.ScreenToWorld <| this.ToVector
 type Point2 with
     member this.ToVector = Vector2(this.X, this.Y)
     member this.ToSize = Size2(this.X, this.Y)

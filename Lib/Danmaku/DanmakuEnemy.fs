@@ -9,6 +9,8 @@ open MonoGame.Extended.Entities.Systems
 
 open Tools
 open RenderSystem
+open TransformUpdater
+open MonoGame.Extended.Tweening
 
 type Enemy()=
     let mutable hp = 100f
@@ -110,6 +112,14 @@ type EnemySystem (boundaries: RectangleF) =
                         let newTransform = Transform2 transform.Position
                         // System.Console.WriteLine $"spawned new enemy at {newTransform.Position}"
                         newEnemy.Attach newTransform
+                        newEnemy.Attach <| TweenTransformer (TweenTransformer.MoveTweener(
+                            newTransform, 
+                            (Vector2(1200f,100f)), 
+                            2f, 
+                            0f, 
+                            EasingFunctions.CircleInOut
+                            ))
+
                         
                         newEnemy.Attach(Collision.TransformCollisionActor(newTransform, 5f, "enemy", 
                             onCollision = (fun other -> 

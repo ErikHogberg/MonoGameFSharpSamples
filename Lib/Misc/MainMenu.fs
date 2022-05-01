@@ -52,11 +52,11 @@ type MainMenu (game, graphics, screenCalls: List<unit -> GameScreenWithComponent
         let listenerComponent =
             new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
 
-        let buttonSystem = new ButtonSystem(camera)
-        mouseListener.MouseMoved.Add <| fun e -> buttonSystem.HoverPos <- e.Position 
+        let buttonSystem = new ButtonSystem()
+        mouseListener.MouseMoved.Add <| fun e -> buttonSystem.HoverPos <- e.Position.ScreenToWorld camera
         mouseListener.MouseClicked.Add <| fun _ -> buttonSystem.QueuedClick <- true
-        mouseListener.MouseDown.Add <| fun _ -> buttonSystem.MouseDown <- true
-        mouseListener.MouseUp.Add <| fun _ -> buttonSystem.MouseDown <- false
+        mouseListener.MouseDown.Add <| fun e -> buttonSystem.MouseDown <- Some (e.Position.ScreenToWorld camera).ToPoint2
+        mouseListener.MouseUp.Add <| fun _ -> buttonSystem.MouseDown <- None
 
         this.Components.Add listenerComponent
 

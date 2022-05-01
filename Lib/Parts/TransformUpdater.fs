@@ -76,20 +76,24 @@ type TweenTransformer(tweener: Tweener) =
         toTarget: Vector2,
         duration, 
         repeatDelay, 
-        easingFn: float32 -> float32 
+        easingFn: float32 -> float32,
+        ?once
     ) =
+        let once = defaultArg once false
         let tweener = new Tweener()
         let _ = 
-            tweener.TweenTo(
-                target, 
-                (fun (t) -> t.Position),
-                toTarget,
-                duration, 
-                0f
-                )
-                    .RepeatForever(repeatDelay) 
-                    .AutoReverse()
-                    .Easing(easingFn)
+            if once then
+                tweener.TweenTo(target, 
+                    (fun t -> t.Position),
+                    toTarget, duration, 0f)
+                        .Easing(easingFn)
+            else
+                tweener.TweenTo(target, 
+                    (fun t -> t.Position),
+                    toTarget, duration, 0f)
+                        .RepeatForever(repeatDelay) 
+                        .AutoReverse()
+                        .Easing(easingFn)
         tweener
 
     static member StretchTweener(
@@ -97,13 +101,14 @@ type TweenTransformer(tweener: Tweener) =
         toTarget: float32,//: 'TMember, 
         duration, 
         repeatDelay, 
-        easingFn: float32 -> float32 
+        easingFn: float32 -> float32
     ) =
+        
         let tweener = new Tweener()
         let _ = 
             tweener.TweenTo(
                 target, 
-                (fun (t: EllipseF) -> t.RadiusX),
+                (fun t -> t.RadiusX),
                 toTarget,
                 duration, 
                 0f

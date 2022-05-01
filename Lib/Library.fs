@@ -56,6 +56,9 @@ type Game1() as x =
             (fun _ -> new Test1.TestGame1(x, graphics))
         ]
 
+    do screenCalls <- (fun _ -> new MainMenu.MainMenu(x, graphics, screenCalls)) :: screenCalls
+
+
     member this.OnResize e = 
         graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width
         graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height
@@ -99,18 +102,17 @@ type Game1() as x =
             | Keys.D4 ->
                 screenManager.LoadScreen(screenCalls[4] (), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
             | Keys.D5 ->
-                screenManager.LoadScreen(screenCalls[0] (), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
-            // | Keys.Space ->
-                // this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
+                screenManager.LoadScreen(screenCalls[0] (), new FadeTransition(this.GraphicsDevice, Color.Orange, 1f))
             | _ -> ()
            
             
 
         let viewportAdapter =
             // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
-            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
+            // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
+            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 16, 9)
 
-        camera <- OrthographicCamera(viewportAdapter)
+        camera <- OrthographicCamera viewportAdapter
 
         base.Initialize()
 
@@ -120,7 +122,6 @@ type Game1() as x =
         // printfn "content root: %s" this.Content.RootDirectory
         dot <- this.Content.Load "1px"
 
-        screenCalls <- (fun _ -> new MainMenu.MainMenu(this, graphics, screenCalls)) :: screenCalls
 
         screenManager.LoadScreen(screenCalls.Head (), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
 
@@ -129,6 +130,6 @@ type Game1() as x =
     // override this.Update(gameTime) =
         // base.Update gameTime
 
-    override this.Draw(gameTime) =
+    override this.Draw gameTime =
         this.GraphicsDevice.Clear Color.CornflowerBlue
         base.Draw gameTime

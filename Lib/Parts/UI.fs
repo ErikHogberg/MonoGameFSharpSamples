@@ -12,7 +12,7 @@ type Button(onClick: unit->unit) =
 
     member this.OnClick = onClick
 
-type ButtonSystem (camera: OrthographicCamera) =
+type ButtonSystem () =
     inherit EntityUpdateSystem(Aspect.All(typedefof<Button>, typedefof<Transform2>, typedefof<Dot>, typedefof<SizeComponent>))    
 
     let mutable transformMapper: ComponentMapper<Transform2> = null
@@ -22,7 +22,7 @@ type ButtonSystem (camera: OrthographicCamera) =
 
     let mutable hoverPos = Point2.Zero
     let mutable queuedClick = false
-    let mutable mouseDown = false
+    let mutable mouseDown: Point2 option = None
 
     member this.HoverPos with set (value) = hoverPos <- value
     member this.QueuedClick with set (value) = queuedClick <- value
@@ -37,7 +37,7 @@ type ButtonSystem (camera: OrthographicCamera) =
     override this.Update gameTime =
         // let dt = gameTime.GetElapsedSeconds()
 
-        let currentHoverPos = (camera.ScreenToWorld hoverPos).ToPoint2
+        // let currentHoverPos = (camera.ScreenToWorld hoverPos).ToPoint2
 
         for entityId in this.ActiveEntities do
             let transform = transformMapper.Get entityId
@@ -50,19 +50,30 @@ type ButtonSystem (camera: OrthographicCamera) =
             
             let rect = RectangleF(pos , fullSize)
             
-            if rect.Contains currentHoverPos then
+            if rect.Contains hoverPos then
                 if queuedClick then
+                    // FIXME: sometimes doesn't click even when hover and mouse down is detected
                     button.OnClick ()
                     queuedClick <- false
-                    dot.Color <- Color.White
+                    // dot.Color <- Color.White
                 else
-                    if mouseDown then
+                    let pressed = 
+                        match mouseDown with
+                        | Some pos -> 
+                            rect.Contains pos
+                        | None -> false
+                    if pressed then
                         dot.Color <- Color.White
                     else
-                        dot.Color <- Color.DarkBlue
+                        dot.Color <- Color.Black
+                        mouseDown <- None
             else
                 dot.Color <- Color.DarkGray
-
+                match mouseDown with
+                | Some pos -> 
+                    if rect.Contains pos then
+                        mouseDown <- None
+                | None -> ()
             ()
 
         queuedClick <- false
