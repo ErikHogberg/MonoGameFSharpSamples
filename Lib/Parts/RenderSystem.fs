@@ -115,7 +115,7 @@ type DotRenderSystem(graphicsDevice: GraphicsDevice, camera: OrthographicCamera)
             let dot = dotMapper.Get entityId
             let size = (sizeMapper.Get entityId).Size
             
-            spriteBatch.FillRectangle (transform.Position - size.ToVector(), size * 2f, dot.Color)
+            spriteBatch.FillRectangle (transform.Position - size.ToVector, size * 2f, dot.Color)
             ()
 
         spriteBatch.End ()

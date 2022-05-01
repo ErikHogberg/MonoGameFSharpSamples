@@ -60,9 +60,9 @@ type DanmakuGame (game, graphics) =
         );
     ] 
 
-    let mutable mouseListener = MouseListener ()
-    let mutable touchListener = TouchListener ()
-    let mutable kbdListener = KeyboardListener ()
+    let mouseListener = MouseListener ()
+    let touchListener = TouchListener ()
+    let kbdListener = KeyboardListener ()
 
     let mutable upPressed = false
     let mutable leftPressed = false

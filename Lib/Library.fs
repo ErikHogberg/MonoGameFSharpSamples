@@ -79,7 +79,7 @@ type Game1() as x =
         this.Components.Add listenerComponent
         this.Components.Add screenManager
 
-        kbdListener.KeyPressed.Add(fun args  ->
+        kbdListener.KeyPressed.Add <| fun args  ->
             match args.Key with
             | Keys.Escape ->
                 this.Exit()
@@ -91,11 +91,13 @@ type Game1() as x =
                 screenManager.LoadScreen(new DebugScene(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Green, 0.5f))
             | Keys.D4 ->
                 screenManager.LoadScreen(new Test1.TestGame1(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
+            | Keys.D5 ->
+                screenManager.LoadScreen(new MainMenu.MainMenu(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
             // | Keys.Space ->
                 // this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
             | _ -> ()
            
-            ())
+            
 
         let viewportAdapter =
             // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
@@ -103,9 +105,7 @@ type Game1() as x =
 
         camera <- OrthographicCamera(viewportAdapter)
 
-
         base.Initialize()
-        ()
 
     override this.LoadContent() =
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
@@ -113,20 +113,13 @@ type Game1() as x =
         // printfn "content root: %s" this.Content.RootDirectory
         dot <- this.Content.Load "1px"
 
-        // Singleton.Instance.Set("dot", this.dot)
-
-        screenManager.LoadScreen(new DanmakuGame(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
+        screenManager.LoadScreen(new MainMenu.MainMenu(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
 
         ()
 
-    override this.Update(gameTime) =
-        // let dt = gameTime.GetElapsedSeconds()
-     
-        base.Update gameTime
-        ()
+    // override this.Update(gameTime) =
+        // base.Update gameTime
 
     override this.Draw(gameTime) =
         this.GraphicsDevice.Clear Color.CornflowerBlue
-
         base.Draw gameTime
-        ()

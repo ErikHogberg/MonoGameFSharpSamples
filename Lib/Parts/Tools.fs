@@ -43,12 +43,15 @@ module Singleton =
 
     let Instance = Product()
 
+type Point with
+    member this.ToPoint2 = Point2(float32 this.X, float32 this.Y)
 type Point2 with
     member this.ToVector = Vector2(this.X, this.Y)
     member this.ToSize = Size2(this.X, this.Y)
     member this.Inverse = Point2.Zero - this
 type Size2 with
-    member this.ToVector() = Vector2(this.Width, this.Height)
+    member this.ToVector = Vector2(this.Width, this.Height)
+    member this.ToPoint2 = Point2(this.Width, this.Height)
     static member Square size = Size2(size, size)
 
 type Vector2 with
