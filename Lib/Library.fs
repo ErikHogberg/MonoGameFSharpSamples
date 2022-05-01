@@ -1,33 +1,19 @@
-﻿namespace SpaceGame
-
-open System
+﻿namespace Game1
 
 open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Input
 open Microsoft.Xna.Framework.Graphics
-open Microsoft.Xna.Framework.Content
 
 open MonoGame.Extended
 open MonoGame.Extended.Input.InputListeners
-open MonoGame.Extended.Entities
-open MonoGame.Extended.Sprites
 open MonoGame.Extended.ViewportAdapters
 open MonoGame.Extended.Screens
 open MonoGame.Extended.Screens.Transitions
-open MonoGame.Extended.Tweening
 
-
-open Ship
-open Asteroids
-open Boids
-open Tools
-open RenderSystem
 open Danmaku
 open SpaceTactics
 open DebugScene
-
-
-// TODO: use scene graphs
+open GameScreenWithComponents
 
 type Game1() as x =
     inherit Game()
@@ -37,19 +23,16 @@ type Game1() as x =
     let graphics = new GraphicsDeviceManager(x)
     let mutable spriteBatch: SpriteBatch = null
 
-    // note that listeners and many other things do not need to be mutable, despite being modified later. 
-    // only the reference to the class instance needs to be immutable 
-    let mouseListener = MouseListener()
-    let touchListener = TouchListener()
-    let kbdListener = KeyboardListener()
+    let mouseListener = MouseListener ()
+    let touchListener = TouchListener ()
+    let kbdListener = KeyboardListener ()
 
-    // TODO: resize screen manager on window resize
     let screenManager = new ScreenManager()
 
     let mutable camera: OrthographicCamera = null
     let mutable dot: Texture2D = null
 
-    let mutable screenCalls: (unit -> GameScreenWithComponents.GameScreenWithComponents) list = [
+    let mutable screenCalls: (unit -> GameScreenWithComponents) list = [
             (fun _ -> (new DanmakuGame(x, graphics)));
             (fun _ -> new SpaceGame(x, graphics));
             (fun _ -> new DebugScene(x, graphics));
@@ -81,7 +64,7 @@ type Game1() as x =
             720
 
         graphics.PreferMultiSampling <- false
-        graphics.ApplyChanges()
+        graphics.ApplyChanges ()
 
         let listenerComponent =
             new InputListenerComponent (this, mouseListener, touchListener, kbdListener)

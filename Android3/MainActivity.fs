@@ -10,7 +10,7 @@ open Android.Views
 open Android.Widget
 open Microsoft.Xna.Framework
 
-open SpaceGame
+open Game1
 
 //type Resources = Android3.Resource
 

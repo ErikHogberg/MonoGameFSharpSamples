@@ -19,6 +19,7 @@ open GameScreenWithComponents
 open Bullets
 open Tools
 open TransformUpdater
+open Collision
 
 type DanmakuGame (game, graphics) =
     inherit GameScreenWithComponents (game, graphics)
@@ -36,7 +37,7 @@ type DanmakuGame (game, graphics) =
     let playerBoundaries = RectangleF (Point2(600f, 50f), Size2(700f, 1000f))
     let playerMover = ConstrainedTransform ()
 
-    let playerBulletOnCollision (other: Collision.TransformCollisionActor) = other.Tag <> enemyTag
+    let playerBulletOnCollision (other: TransformCollisionActor) = other.Tag <> enemyTag
     let playerBulletSpawners = [
         BulletSpawner (
             10f, 
@@ -103,19 +104,19 @@ type DanmakuGame (game, graphics) =
                     playerBulletSpawner.Firing <- true
             | Keys.W | Keys.I ->
                 upPressed <- true
-                playerMover.Velocity <- Vector2.UnitY * -1f + Vector2.UnitX* playerMover.Velocity.X
+                playerMover.Velocity <- Vector2.UnitY * -1f + Vector2.UnitX * playerMover.Velocity.X
             | Keys.A | Keys.J ->
                 leftPressed <- true
-                playerMover.Velocity <- Vector2.UnitX * -1f + Vector2.UnitY* playerMover.Velocity.Y
+                playerMover.Velocity <- Vector2.UnitX * -1f + Vector2.UnitY * playerMover.Velocity.Y
             | Keys.S | Keys.K ->
                 downPressed <- true
-                playerMover.Velocity <- Vector2.UnitY + Vector2.UnitX* playerMover.Velocity.X
+                playerMover.Velocity <- Vector2.UnitY + Vector2.UnitX * playerMover.Velocity.X
             | Keys.D | Keys.L ->
                 rightPressed <- true
-                playerMover.Velocity <- Vector2.UnitX + Vector2.UnitY* playerMover.Velocity.Y
+                playerMover.Velocity <- Vector2.UnitX + Vector2.UnitY * playerMover.Velocity.Y
             | Keys.LeftShift -> 
                 shiftPressed <- true
-                playerMover.Speed <- PlayerSpeedEval()
+                playerMover.Speed <- PlayerSpeedEval ()
             | _ -> ()
 
 
@@ -136,21 +137,21 @@ type DanmakuGame (game, graphics) =
                 leftPressed <- false
                 if playerMover.Velocity.X < 0f then
                     if rightPressed then 
-                        playerMover.Velocity <- Vector2.UnitX + Vector2.UnitY* playerMover.Velocity.Y 
+                        playerMover.Velocity <- Vector2.UnitX + Vector2.UnitY * playerMover.Velocity.Y 
                     else
                         playerMover.Velocity <- Vector2.UnitY * playerMover.Velocity.Y
             | Keys.S | Keys.K ->
                 downPressed <- false
                 if playerMover.Velocity.Y > 0f then
                     if upPressed then
-                        playerMover.Velocity <- Vector2.UnitY * -1f + Vector2.UnitX* playerMover.Velocity.X
+                        playerMover.Velocity <- Vector2.UnitY * -1f + Vector2.UnitX * playerMover.Velocity.X
                     else
                         playerMover.Velocity <- Vector2.UnitX * playerMover.Velocity.X
             | Keys.D | Keys.L ->
                 rightPressed <- false
                 if playerMover.Velocity.X > 0f then
                     if leftPressed then 
-                        playerMover.Velocity <- Vector2.UnitX * -1f + Vector2.UnitY* playerMover.Velocity.Y
+                        playerMover.Velocity <- Vector2.UnitX * -1f + Vector2.UnitY * playerMover.Velocity.Y
                     else
                         playerMover.Velocity <- Vector2.UnitY * playerMover.Velocity.Y
             | Keys.LeftShift -> 
@@ -171,15 +172,17 @@ type DanmakuGame (game, graphics) =
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, camera))
                 .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
 
-                .AddSystem(new BulletSystem (playerBoundaries))
+                .AddSystem(new BulletSystem(playerBoundaries))
                 .AddSystem(new BulletSpawnerSystem())
                 .AddSystem(new EnemySpawnerSystem ())
 
-                .AddSystem(new Collision.CollisionSystem(playerBoundaries))
+                .AddSystem(new CollisionSystem(playerBoundaries))
 
                 .AddSystem(new ConstrainedTransformSystem(playerBoundaries))
                 .AddSystem(new TransformFollowerSystem ())
                 .AddSystem(new TweenTransformerSystem())
+
+                .AddSystem(new ecs.DelayedActionSystem())
 
                 .Build ()
 
@@ -203,7 +206,7 @@ type DanmakuGame (game, graphics) =
         playerEntity.Attach playerBulletSpawners.Head
         playerEntity.Attach <| Dot Color.GreenYellow
         playerEntity.Attach <| SizeComponent 10f
-        playerEntity.Attach <| Collision.TransformCollisionActor(
+        playerEntity.Attach <| TransformCollisionActor(
             playerTransform, 
             5f, 
             playerTag, 
@@ -223,15 +226,14 @@ type DanmakuGame (game, graphics) =
 
 
         let enemySpawner = world.CreateEntity ()
-        enemySpawner.Attach <| EnemySpawner(5f, 4u)
-        let enemySpawnerTransform = Transform2 (Vector2(800f, 100f))
+        enemySpawner.Attach <| EnemySpawner(3f, 4u)
+        let enemySpawnerTransform = Transform2 (Vector2(800f, 50f))
         enemySpawner.Attach enemySpawnerTransform
         enemySpawner.Attach <| TweenTransformer (TweenTransformer.MoveTweener(
             enemySpawnerTransform, 
-            Vector2(1200f,100f), 
+            enemySpawnerTransform.Position + Vector2.UnitX * 400f,
             2f, 0f, 
-            EasingFunctions.CircleInOut, 
-            once = true
+            EasingFunctions.CubicInOut
         ))
         enemySpawner.Attach <| Dot Color.Aquamarine
         enemySpawner.Attach <| SizeComponent 5f

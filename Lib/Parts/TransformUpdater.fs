@@ -85,12 +85,12 @@ type TweenTransformer(tweener: Tweener) =
             if once then
                 tweener.TweenTo(target, 
                     (fun t -> t.Position),
-                    toTarget, duration, 0f)
+                    toTarget, duration, repeatDelay)
                         .Easing(easingFn)
             else
                 tweener.TweenTo(target, 
                     (fun t -> t.Position),
-                    toTarget, duration, 0f)
+                    toTarget, duration, repeatDelay)
                         .RepeatForever(repeatDelay) 
                         .AutoReverse()
                         .Easing(easingFn)

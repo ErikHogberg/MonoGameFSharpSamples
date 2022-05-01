@@ -46,7 +46,7 @@ type BulletSystem (boundaries: RectangleF) =
         bulletMapper <- mapperService.GetMapper ()
         ()
 
-    override this.Update(gameTime: GameTime) =
+    override this.Update gameTime =
         let dt = gameTime.GetElapsedSeconds()
 
         for entityId in this.ActiveEntities do
@@ -67,7 +67,7 @@ type BulletSystem (boundaries: RectangleF) =
                 // pull velocity towards gravity target
                 match bullet.Target with
                     | Some target ->
-                        bullet.Velocity <- bullet.Velocity + Vector2.Normalize(target.Position - transform.Position) * 5f
+                        bullet.Velocity <- bullet.Velocity + (Vector2.Normalize <| target.Position - transform.Position) * 5f
                     | None ->
                         ()
 
@@ -88,10 +88,10 @@ type BulletSystem (boundaries: RectangleF) =
     //         (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other )
 
 type BulletSpawner (rate: float32, spawnVelocity: Vector2, tag: string, onCollision: Collision.TransformCollisionActor -> bool) = 
-    let rate = 1f/rate
+    let rate = 1f / rate
 
     let mutable firing = false
-    let mutable firingTimer = -1.0f
+    let mutable firingTimer = -1f
 
     let spawnVelocity = spawnVelocity
 
@@ -121,7 +121,7 @@ type BulletSpawnerSystem () =
     let mutable bulletMapper: ComponentMapper<BulletSpawner> = null
 
     member this.CreateBullet (position: Vector2) velocity (size: float32) (bulletSpawner: BulletSpawner) =
-        let entity = this.CreateEntity()
+        let entity = this.CreateEntity ()
         let transform = Transform2 position
         let bullet = Bullet (velocity, None)
         entity.Attach transform
@@ -132,11 +132,11 @@ type BulletSpawnerSystem () =
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
-        transformMapper <- mapperService.GetMapper<Transform2>()
-        bulletMapper <- mapperService.GetMapper<BulletSpawner>()
+        transformMapper <- mapperService.GetMapper()
+        bulletMapper <- mapperService.GetMapper()
         ()
 
-    override this.Update(gameTime: GameTime) =
+    override this.Update gameTime =
         let dt = gameTime.GetElapsedSeconds()
 
         for entityId in this.ActiveEntities do
@@ -152,5 +152,6 @@ type BulletSpawnerSystem () =
                     ()
             else
                 bulletSpawner.FiringTimer <- 0f
-            
+                
         ()
+            

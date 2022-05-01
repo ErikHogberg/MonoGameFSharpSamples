@@ -17,17 +17,17 @@ open MonoGame.Extended.Screens.Transitions
 open GameScreenWithComponents
 open Tools
 
-type DebugScene(game: Game, graphics) =
-    inherit GameScreenWithComponents(game, graphics)
+type DebugScene (game: Game, graphics) =
+    inherit GameScreenWithComponents (game, graphics)
 
     let mutable firaCode: SpriteFont = null
     let mutable camera: OrthographicCamera = null
 
     let mutable spriteBatch: SpriteBatch = Unchecked.defaultof<SpriteBatch>
 
-    let mouseListener = MouseListener()
-    let touchListener = TouchListener()
-    let kbdListener = KeyboardListener()
+    let mouseListener = MouseListener ()
+    let touchListener = TouchListener ()
+    let kbdListener = KeyboardListener ()
 
 
     let mutable v1 = Vector2(500f,400f)

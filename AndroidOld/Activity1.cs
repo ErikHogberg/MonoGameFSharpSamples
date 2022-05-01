@@ -4,9 +4,9 @@ using Android.OS;
 using Android.Views;
 using Microsoft.Xna.Framework;
 
-using SpaceGame;
+using Game1;
 
-namespace SpaceStratAndroid
+namespace SpaceStratAndroid // TODO: raname
 {
     [Activity(
         Label = "@string/app_name",

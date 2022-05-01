@@ -12,6 +12,7 @@
     <PackageReference Include="MonoGame.Extended.Collisions" Version="3.8.0" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Parts/ECS.fs" />
     <Compile Include="Parts/Tools.fs" />
     <Compile Include="Parts/Collision.fs" />
     <Compile Include="Parts/RenderSystem.fs" />

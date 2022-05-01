@@ -70,11 +70,14 @@ type EnemySystem (boundaries: RectangleF) =
         // member this.Count with get() = count and set(value) = count <- value
         member this.IncrementCount () = count <- count + 1u
         member this.DecrementCount () = if count > 0u then count <- count - 1u
-        member this.SpawnAllowed () = count < maxCount
+        member this.SpawnAllowed = count < maxCount
         member this.MaxCount = maxCount
-        member this.TimerExpired () = timer < 0f
-        member this.DecrementTimer time = timer <- timer - time
-        member this.IncrementTimer () = timer <- timer + time
+        member this.TimerExpired = timer < 0f
+        member this.TickTimer time = 
+            timer <- timer - time
+            this.TimerExpired
+        member this.RewindTimer () = 
+            timer <- timer + time
 
 
     type EnemySpawnerSystem () =
@@ -90,45 +93,46 @@ type EnemySystem (boundaries: RectangleF) =
             transformMapper <- mapperService.GetMapper()
             enemySpawnerMapper <- mapperService.GetMapper()
 
-        override this.Update(gameTime: GameTime) =
+        override this.Update gameTime =
             let dt = gameTime.GetElapsedSeconds ()
 
             for entityId in this.ActiveEntities do
                 let transform = transformMapper.Get entityId
                 let enemySpawner = enemySpawnerMapper.Get entityId
 
-                enemySpawner.DecrementTimer dt
-                while enemySpawner.TimerExpired () do
-                    if enemySpawner.SpawnAllowed () then
+                
+                while enemySpawner.TickTimer dt do
+                    enemySpawner.RewindTimer ()
+                    if enemySpawner.SpawnAllowed then
                         enemySpawner.IncrementCount ()
-                        enemySpawner.IncrementTimer ()
                         
                         let newEnemy = this.CreateEntity ()
                         
                         newEnemy.Attach <| Enemy ()
                         newEnemy.Attach <| Dot Color.AliceBlue
-                        newEnemy.Attach <| SizeComponent(20f,15f)
+                        newEnemy.Attach <| SizeComponent (20f, 15f)
 
                         let newTransform = Transform2 transform.Position
                         // System.Console.WriteLine $"spawned new enemy at {newTransform.Position}"
                         newEnemy.Attach newTransform
                         newEnemy.Attach <| TweenTransformer (TweenTransformer.MoveTweener(
                             newTransform, 
-                            (Vector2(1200f,100f)), 
-                            2f, 
-                            0f, 
-                            EasingFunctions.CircleInOut
+                            transform.Position + Vector2.UnitY * 120f, 
+                            0.7f, 
+                            0.3f, 
+                            EasingFunctions.CircleOut,
+                            once = true
                             ))
 
                         
-                        newEnemy.Attach(Collision.TransformCollisionActor(newTransform, 5f, "enemy", 
+                        newEnemy.Attach <| Collision.TransformCollisionActor(newTransform, 10f, "enemy", 
                             onCollision = (fun other -> 
                             let dead = other.Tag = "player"
                             if dead then
                                 enemySpawner.DecrementCount ()
                             not dead
-                        )))
-                        
+                        ))
+
                         let spawner = Bullets.BulletSpawner(
                             3f, 
                             Vector2.UnitY * 150f, 
@@ -139,8 +143,10 @@ type EnemySystem (boundaries: RectangleF) =
                                     // System.Console.WriteLine "enemy bullet hit"
                                 not hit
                             )
+
                         spawner.Firing <- true
-                        newEnemy.Attach spawner 
+                        // newEnemy.Attach spawner
+                        newEnemy.Attach <| ecs.DelayedAction((fun  _ -> newEnemy.Attach spawner), 1.2f)
                     ()
 
 
