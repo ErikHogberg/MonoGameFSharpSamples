@@ -49,10 +49,17 @@ type Game1() as x =
     let mutable camera: OrthographicCamera = null
     let mutable dot: Texture2D = null
 
-    member this.OnResize (e: EventArgs) = 
-        graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width;
-        graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height;
-        graphics.ApplyChanges();
+    let mutable screenCalls: (unit -> GameScreenWithComponents.GameScreenWithComponents) list = [
+            (fun _ -> (new DanmakuGame(x, graphics)));
+            (fun _ -> new SpaceGame(x, graphics));
+            (fun _ -> new DebugScene(x, graphics));
+            (fun _ -> new Test1.TestGame1(x, graphics))
+        ]
+
+    member this.OnResize e = 
+        graphics.PreferredBackBufferWidth <- graphics.GraphicsDevice.Viewport.Width
+        graphics.PreferredBackBufferHeight <- graphics.GraphicsDevice.Viewport.Height
+        graphics.ApplyChanges ()
         ()
     
     override this.Initialize() =
@@ -74,7 +81,7 @@ type Game1() as x =
         graphics.ApplyChanges()
 
         let listenerComponent =
-            new InputListenerComponent(this, mouseListener, touchListener, kbdListener)
+            new InputListenerComponent (this, mouseListener, touchListener, kbdListener)
 
         this.Components.Add listenerComponent
         this.Components.Add screenManager
@@ -82,17 +89,17 @@ type Game1() as x =
         kbdListener.KeyPressed.Add <| fun args  ->
             match args.Key with
             | Keys.Escape ->
-                this.Exit()
+                this.Exit ()
             | Keys.D1 ->
-                screenManager.LoadScreen(new DanmakuGame(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Black, 0.5f))
+                screenManager.LoadScreen(screenCalls[1] (), new FadeTransition(this.GraphicsDevice, Color.Black, 0.5f))
             | Keys.D2 ->
-                screenManager.LoadScreen(new SpaceGame(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Red, 0.5f))
+                screenManager.LoadScreen(screenCalls[2] (), new FadeTransition(this.GraphicsDevice, Color.Red, 0.5f))
             | Keys.D3 ->
-                screenManager.LoadScreen(new DebugScene(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Green, 0.5f))
+                screenManager.LoadScreen(screenCalls[3] (), new FadeTransition(this.GraphicsDevice, Color.Green, 0.5f))
             | Keys.D4 ->
-                screenManager.LoadScreen(new Test1.TestGame1(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
+                screenManager.LoadScreen(screenCalls[4] (), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
             | Keys.D5 ->
-                screenManager.LoadScreen(new MainMenu.MainMenu(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
+                screenManager.LoadScreen(screenCalls[0] (), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
             // | Keys.Space ->
                 // this.asteroidsRenderSystem.AlwaysShow <- not this.asteroidsRenderSystem.AlwaysShow
             | _ -> ()
@@ -113,7 +120,9 @@ type Game1() as x =
         // printfn "content root: %s" this.Content.RootDirectory
         dot <- this.Content.Load "1px"
 
-        screenManager.LoadScreen(new MainMenu.MainMenu(this, graphics), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
+        screenCalls <- (fun _ -> new MainMenu.MainMenu(this, graphics, screenCalls)) :: screenCalls
+
+        screenManager.LoadScreen(screenCalls.Head (), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
 
         ()
 

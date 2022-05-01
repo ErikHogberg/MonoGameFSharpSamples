@@ -277,7 +277,7 @@ type BoidsSystem (boundaries: EllipseF) =
                     + pointOnBoundary
 
                 let id =
-                    this.CreateBoid position spawnVelocity (random.NextSingle(2f, 4f))
+                    this.CreateBoid <| position <| spawnVelocity <| random.NextSingle(2f, 4f)
 
                 ()
 

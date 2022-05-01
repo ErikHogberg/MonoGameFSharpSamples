@@ -28,37 +28,6 @@ let InverseSqrt(x:float32) =
     x2 * (1.5f - xhalf * x2 * x2)
 
 
-module Singleton =
-    open Microsoft.Xna.Framework.Graphics
-
-    type Product internal () =
-        let mutable textures: Map<string, Texture2D> = Map []
-
-        member this.Set(key: string, value: Texture2D) =
-            textures <- textures.Add(key, value)
-
-        member this.Get(key: string) =
-            textures.[ key ]
-
-
-    let Instance = Product()
-
-type RectangleF with
-    member this.Transform (transformMatrix: Matrix) =
-        let center = Vector2.Transform(this.Center, transformMatrix)//transformMatrix.Transform(this.Center);
-        let mutable halfExtents = this.Size
-        // TODO: properly map to 3d (4x4) matrix, is currently mapped to 2d (3x3)
-        halfExtents.Width <- 
-              halfExtents.Width * MathF.Abs(transformMatrix.M11) 
-            + halfExtents.Width * MathF.Abs(transformMatrix.M12) 
-            + halfExtents.Width * MathF.Abs(transformMatrix.M31)
-        halfExtents.Height <- 
-              halfExtents.Height * MathF.Abs(transformMatrix.M21) 
-            + halfExtents.Height * MathF.Abs(transformMatrix.M22) 
-            + halfExtents.Height * MathF.Abs(transformMatrix.M32)
-
-        RectangleF(center, halfExtents * 2f)
-
 type Point with
     member this.ToPoint2 = Point2(float32 this.X, float32 this.Y)
 type Point2 with
