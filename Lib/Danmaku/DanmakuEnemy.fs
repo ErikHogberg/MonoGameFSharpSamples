@@ -144,9 +144,8 @@ type EnemySystem (boundaries: RectangleF) =
                                 not hit
                             )
 
-                        spawner.Firing <- true
-                        // newEnemy.Attach spawner
-                        newEnemy.Attach <| ecs.DelayedAction((fun  _ -> newEnemy.Attach spawner), 1.2f)
+                        newEnemy.Attach spawner
+                        newEnemy.Attach <| ecs.DelayedAction((fun  _ -> spawner.Firing <- true), 1.2f)
                     ()
 
 
