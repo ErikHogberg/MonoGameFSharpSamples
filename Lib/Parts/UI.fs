@@ -40,6 +40,7 @@ type ButtonSystem (camera: OrthographicCamera) =
 
         let transformMatrix = camera.GetViewMatrix()
         // let currentHoverPos = Vector2.Transform(hoverPos, transformMatrix)
+        // let currentHoverPos = Vector2.Transform(hoverPos, transformMatrix)
         let mutable currentHoverPos = hoverPos
         // TODO: inverse transform mouse position
         // let success, scale, rotation, translation = transformMatrix.Decompose()
@@ -56,7 +57,7 @@ type ButtonSystem (camera: OrthographicCamera) =
             let pos = transform.Position.ToPoint2 - size//Vector2.Transform(transform.Position.ToPoint2 - size, transformMatrix)
             let fullSize = size*2f//Vector2.Transform(size *2f, transformMatrix)
             
-            let rect = RectangleF( pos , fullSize)
+            let rect = RectangleF( pos , fullSize).Transform(transformMatrix)
             
 
 
