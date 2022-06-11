@@ -9,6 +9,7 @@ open MonoGame.Extended
 open MonoGame.Extended.Entities
 open MonoGame.Extended.Entities.Systems
 open MonoGame.Extended.Collisions
+open MonoGame.Extended.Collections
 
 open Tools
 open RenderSystem
@@ -87,21 +88,24 @@ type BulletSystem (boundaries: RectangleF) =
     //     member this.CheckCollision other =
     //         (collisionTree.Query other).Any( fun boid -> boid.Bounds.Intersects other )
 
-type BulletSpawner (rate: float32, spawnVelocity: Vector2, tag: string, onCollision: Collision.TransformCollisionActor -> bool) = 
+type BulletSpawner (rate: float32, spawnVelocity: Vector2, tag: string, saveBullets: bool, onCollision: Collision.TransformCollisionActor -> bool) = 
     let rate = 1f / rate
 
     let mutable firing = false
     let mutable firingTimer = -1f
 
-    let spawnVelocity = spawnVelocity
+    // let spawnVelocity = spawnVelocity
 
-    let tag = tag
-    let onCollision = onCollision
+    // let tag = tag
+    // let onCollision = onCollision
+
+    let spawnedBullets = Bag<int>()
 
     member this.SpawnVelocity with get () = spawnVelocity
     member this.FiringRate with get () = rate
     member this.OnCollision = onCollision
     member this.Tag = tag
+    member this.SpawnedBullets with get () = spawnedBullets
 
     member this.Firing 
         with set(value) = firing <- value
@@ -111,11 +115,22 @@ type BulletSpawner (rate: float32, spawnVelocity: Vector2, tag: string, onCollis
         with set(value) = firingTimer <- value
         and get () = firingTimer
 
+    member this.SaveBullet bullet =
+        if saveBullets then
+            spawnedBullets.Add bullet
+            // System.Console.WriteLine $"bullet count: {spawnedBullets.Count}"
+        ()
+    member this.RemoveBullet bullet =
+        if saveBullets then
+            let _ = spawnedBullets.Remove bullet
+            ()
+        ()
+
 
 type BulletSpawnerSystem () =
     inherit EntityUpdateSystem(Aspect.All(typedefof<Transform2>, typedefof<BulletSpawner>))
 
-    let random = new FastRandom()
+    let random = FastRandom()
 
     let mutable transformMapper: ComponentMapper<Transform2> = null
     let mutable bulletMapper: ComponentMapper<BulletSpawner> = null
@@ -124,11 +139,20 @@ type BulletSpawnerSystem () =
         let entity = this.CreateEntity ()
         let transform = Transform2 position
         let bullet = Bullet (velocity, None)
+
+        bulletSpawner.SaveBullet entity.Id
+
+        let onCollision2 other = //fun other -> 
+            let survivedCollision = bulletSpawner.OnCollision other
+            if not survivedCollision then 
+                bulletSpawner.RemoveBullet entity.Id
+            survivedCollision
+
         entity.Attach transform
         entity.Attach bullet
         entity.Attach <| Dot Color.Black
         entity.Attach <| SizeComponent size
-        entity.Attach <| Collision.TransformCollisionActor(transform, 5f, bulletSpawner.Tag, bulletSpawner.OnCollision)
+        entity.Attach <| Collision.TransformCollisionActor(transform, 5f, bulletSpawner.Tag, onCollision2)
         entity.Id
 
     override this.Initialize(mapperService: IComponentMapperService) =
@@ -140,14 +164,14 @@ type BulletSpawnerSystem () =
         let dt = gameTime.GetElapsedSeconds()
 
         for entityId in this.ActiveEntities do
-            let transform = transformMapper.Get(entityId)
-            let bulletSpawner = bulletMapper.Get(entityId)
+            let transform = transformMapper.Get entityId
+            let bulletSpawner = bulletMapper.Get entityId
 
             bulletSpawner.FiringTimer <- bulletSpawner.FiringTimer - dt
             if bulletSpawner.Firing then
                 if bulletSpawner.FiringTimer <= 0f then
                     bulletSpawner.FiringTimer <- bulletSpawner.FiringTimer + bulletSpawner.FiringRate
-                    let size = 2f + random.NextSingle(4f)
+                    let size = 2f + random.NextSingle 4f
                     let _ = this.CreateBullet transform.Position bulletSpawner.SpawnVelocity size bulletSpawner
                     ()
             else

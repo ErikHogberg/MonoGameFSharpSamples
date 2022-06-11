@@ -88,6 +88,7 @@ type EnemySystem (boundaries: RectangleF) =
         let mutable transformMapper: ComponentMapper<Transform2> = null
         let mutable enemySpawnerMapper: ComponentMapper<EnemySpawner> = null
 
+        member this.DestroyEntityPublic (entityId: int) = this.DestroyEntity entityId
 
         override this.Initialize(mapperService: IComponentMapperService) =
             transformMapper <- mapperService.GetMapper()
@@ -108,7 +109,8 @@ type EnemySystem (boundaries: RectangleF) =
                         
                         let newEnemy = this.CreateEntity ()
                         
-                        newEnemy.Attach <| Enemy ()
+                        let enemyComponent = Enemy ()
+                        newEnemy.Attach <| enemyComponent
                         newEnemy.Attach <| Dot Color.AliceBlue
                         newEnemy.Attach <| SizeComponent (20f, 15f)
 
@@ -123,20 +125,13 @@ type EnemySystem (boundaries: RectangleF) =
                             EasingFunctions.CircleOut,
                             once = true
                             ))
-
                         
-                        newEnemy.Attach <| Collision.TransformCollisionActor(newTransform, 10f, "enemy", 
-                            onCollision = (fun other -> 
-                            let dead = other.Tag = "player"
-                            if dead then
-                                enemySpawner.DecrementCount ()
-                            not dead
-                        ))
 
                         let spawner = Bullets.BulletSpawner(
                             3f, 
                             Vector2.UnitY * 150f, 
-                            "enemy", 
+                            "enemy",
+                            true, 
                             fun other -> 
                                 let hit = other.Tag = "player"
                                 // if hit then
@@ -145,6 +140,27 @@ type EnemySystem (boundaries: RectangleF) =
                             )
 
                         newEnemy.Attach spawner
+                        
+                        newEnemy.Attach <| Collision.TransformCollisionActor(newTransform, 10f, "enemy", 
+                            onCollision = (fun other -> 
+                            let dead = 
+                                if other.Tag = "player" then
+                                    enemyComponent.HP <- enemyComponent.HP - 10f
+                                    enemyComponent.HP < 0f
+                                else
+                                    false
+
+                            if dead then
+                                enemySpawner.DecrementCount ()
+                                // System.Console.WriteLine $"bullet spawner destroyed, destroying bullets (count: {spawner.SpawnedBullets.Count})"
+                                for bulletEntity in spawner.SpawnedBullets do
+                                    // System.Console.WriteLine $"bullet {bulletEntity} destroyed"
+                                    this.DestroyEntityPublic bulletEntity
+                                spawner.SpawnedBullets.Clear ()
+                                
+                            not dead
+                        ))
+                        
                         newEnemy.Attach <| ecs.DelayedAction((fun  _ -> spawner.Firing <- true), 1.2f)
                     ()
 

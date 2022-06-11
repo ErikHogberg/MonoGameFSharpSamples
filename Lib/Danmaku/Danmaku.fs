@@ -38,23 +38,32 @@ type DanmakuGame (game, graphics) =
     let playerMover = ConstrainedTransform ()
 
     let playerBulletOnCollision (other: TransformCollisionActor) = other.Tag <> enemyTag
+
+    let playerBulletYSpeed = -900f
+    let playerBulletXSpeed = 100f
+    
+    let playerFiringRate = 20f
+
     let playerBulletSpawners = [
         BulletSpawner (
-            10f, 
-            Vector2.UnitY* -350f,
+            playerFiringRate, 
+            Vector2.UnitY* playerBulletYSpeed,
             playerTag,
+            false,
             playerBulletOnCollision
         );
         BulletSpawner (
-            10f, 
-            Vector2.UnitY* -350f + Vector2.UnitX * 100f,
+            playerFiringRate, 
+            Vector2.UnitY* playerBulletYSpeed + Vector2.UnitX * playerBulletXSpeed,
             playerTag,
+            false,
             playerBulletOnCollision
         );
         BulletSpawner (
-            10f, 
-            Vector2.UnitY* -350f + Vector2.UnitX * -100f,
+            playerFiringRate, 
+            Vector2.UnitY* playerBulletYSpeed + Vector2.UnitX * -playerBulletXSpeed,
             playerTag,
+            false,
             playerBulletOnCollision
         );
     ]
@@ -102,16 +111,16 @@ type DanmakuGame (game, graphics) =
                 // IDEA: implement in bullet spawner system, making firing settings per component
                 for playerBulletSpawner in playerBulletSpawners do
                     playerBulletSpawner.Firing <- true
-            | Keys.W | Keys.I ->
+            | Keys.W | Keys.I | Keys.Up ->
                 upPressed <- true
                 playerMover.Velocity <- Vector2.UnitY * -1f + Vector2.UnitX * playerMover.Velocity.X
-            | Keys.A | Keys.J ->
+            | Keys.A | Keys.J | Keys.Left ->
                 leftPressed <- true
                 playerMover.Velocity <- Vector2.UnitX * -1f + Vector2.UnitY * playerMover.Velocity.Y
-            | Keys.S | Keys.K ->
+            | Keys.S | Keys.K | Keys.Down->
                 downPressed <- true
                 playerMover.Velocity <- Vector2.UnitY + Vector2.UnitX * playerMover.Velocity.X
-            | Keys.D | Keys.L ->
+            | Keys.D | Keys.L | Keys.Right ->
                 rightPressed <- true
                 playerMover.Velocity <- Vector2.UnitX + Vector2.UnitY * playerMover.Velocity.Y
             | Keys.LeftShift -> 
