@@ -1,4 +1,4 @@
-namespace Danmaku
+namespace Bookshop
 
 open System
 
@@ -14,59 +14,21 @@ open MonoGame.Extended.Sprites
 open MonoGame.Extended.ViewportAdapters
 open MonoGame.Extended.Tweening
 
-open RenderSystem
 open GameScreenWithComponents
-open Bullets
 open Tools
 open TransformUpdater
-open Collision
+open RenderSystem
 
-type DanmakuGame (game, graphics) =
+type BookShopGame (game, graphics) =
     inherit GameScreenWithComponents (game, graphics)
 
     let mutable fira: SpriteFont = null
     let mutable camera: OrthographicCamera = null
     let mutable spriteBatch: SpriteBatch = null//Unchecked.defaultof<SpriteBatch>
 
-    let playerTag = "player"
-    let enemyTag = "enemy"
-
     let playerSpeed = 400f;
-    let player = Player ()
-    let playerTransform = Transform2 (Vector2(300f, 600f))
-    let playerBoundaries = RectangleF (Point2(600f, 50f), Size2(700f, 1000f))
-    let playerMover = ConstrainedTransform ()
-
-    let playerBulletOnCollision (other: TransformCollisionActor) = other.Tag <> enemyTag
-
-    let playerBulletYSpeed = -900f
-    let playerBulletXSpeed = 100f
-    
-    let playerFiringRate = 20f
-
-    let playerBulletSpawners = [
-        BulletSpawner (
-            playerFiringRate, 
-            Vector2.UnitY* playerBulletYSpeed,
-            playerTag,
-            false,
-            playerBulletOnCollision
-        );
-        BulletSpawner (
-            playerFiringRate, 
-            Vector2.UnitY* playerBulletYSpeed + Vector2.UnitX * playerBulletXSpeed,
-            playerTag,
-            false,
-            playerBulletOnCollision
-        );
-        BulletSpawner (
-            playerFiringRate, 
-            Vector2.UnitY* playerBulletYSpeed + Vector2.UnitX * -playerBulletXSpeed,
-            playerTag,
-            false,
-            playerBulletOnCollision
-        );
-    ]
+    // let playerTransform = Transform2 (Vector2(300f, 600f))
+    // let playerBoundaries = RectangleF (Point2(600f, 50f), Size2(700f, 1000f))
 
     let mouseListener = MouseListener ()
     let touchListener = TouchListener ()
@@ -78,13 +40,18 @@ type DanmakuGame (game, graphics) =
     let mutable rightPressed = false
 
     let mutable shiftPressed = false
-    let sprintMul = 0.6f
+    let sprintMul = 1.6f
     
     let PlayerSpeedEval () = 
         if shiftPressed then
             playerSpeed * sprintMul
         else
             playerSpeed
+
+
+    let playerTransform = Transform2 (Vector2(300f, 600f))
+    let playerBoundaries = RectangleF (Point2(600f, 50f), Size2(700f, 1000f))
+    let playerMover = ConstrainedTransform ()
 
     do playerMover.Speed <- PlayerSpeedEval ()
 
@@ -95,7 +62,6 @@ type DanmakuGame (game, graphics) =
 
         camera <- OrthographicCamera viewportAdapter
 
-        // let easingFn = EasingFunctions.QuadraticIn        
 
         let listenerComponent =
             new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
@@ -104,11 +70,9 @@ type DanmakuGame (game, graphics) =
 
         kbdListener.KeyPressed.Add <| fun args  ->
             match args.Key with 
-            | Keys.Z ->
-                // TODO: sticky firing, always fire for a minimum time even if released
-                // IDEA: implement in bullet spawner system, making firing settings per component
-                for playerBulletSpawner in playerBulletSpawners do
-                    playerBulletSpawner.Firing <- true
+            | Keys.E ->
+                // TODO: use/interact
+                ()
             | Keys.W | Keys.I | Keys.Up ->
                 upPressed <- true
                 playerMover.Velocity <- Vector2.UnitY * -1f + Vector2.UnitX * playerMover.Velocity.X
@@ -129,10 +93,6 @@ type DanmakuGame (game, graphics) =
 
         kbdListener.KeyReleased.Add <| fun args ->
             match args.Key with 
-            | Keys.Z ->
-                for playerBulletSpawner in playerBulletSpawners do
-                    playerBulletSpawner.Firing <- false
-                // bullets1.Firing <- false
             | Keys.W | Keys.I ->
                 upPressed <- false
                 if playerMover.Velocity.Y < 0f then
@@ -179,12 +139,6 @@ type DanmakuGame (game, graphics) =
                 .AddSystem(new SpriteRenderSystem(this.GraphicsDevice, camera))
                 .AddSystem(new DotRenderSystem(this.GraphicsDevice, camera))
 
-                .AddSystem(new BulletSystem(playerBoundaries))
-                .AddSystem(new BulletSpawnerSystem())
-                .AddSystem(new EnemySpawnerSystem ())
-
-                .AddSystem(new CollisionSystem(playerBoundaries))
-
                 .AddSystem(new ConstrainedTransformSystem(playerBoundaries))
                 .AddSystem(new TransformFollowerSystem ())
                 .AddSystem(new TweenTransformerSystem())
@@ -193,57 +147,12 @@ type DanmakuGame (game, graphics) =
 
                 .Build ()
 
-        let leftShooter = world.CreateEntity ()
-        leftShooter.Attach <| Dot Color.GreenYellow
-        leftShooter.Attach <| SizeComponent 10f
-        leftShooter.Attach <| playerBulletSpawners.Tail.Head
-        leftShooter.Attach <| TransformFollower (playerTransform, Vector2(50f, -20f))
-        leftShooter.Attach <| Transform2 playerTransform.Position
-
-        let rightShooter = world.CreateEntity()
-        rightShooter.Attach <| Dot Color.GreenYellow
-        rightShooter.Attach <| SizeComponent 10f
-        rightShooter.Attach <| playerBulletSpawners.Tail.Tail.Head
-        rightShooter.Attach <| TransformFollower (playerTransform, Vector2(-50f, -20f))
-        rightShooter.Attach <| Transform2 playerTransform.Position
 
         let playerEntity = world.CreateEntity()
         playerEntity.Attach playerTransform
         playerEntity.Attach playerMover
-        playerEntity.Attach playerBulletSpawners.Head
         playerEntity.Attach <| Dot Color.GreenYellow
         playerEntity.Attach <| SizeComponent 10f
-        playerEntity.Attach <| TransformCollisionActor(
-            playerTransform, 
-            5f, 
-            playerTag, 
-            onCollision = fun other -> 
-                if other.Tag = enemyTag then
-                    player.HP <- player.HP - 10f
-                    Console.WriteLine $"hit player (hp: {player.HP})"
-                    
-                let dead = player.HP <= 0f
-                if dead then
-                    world.DestroyEntity leftShooter
-                    world.DestroyEntity rightShooter
-                    ()
-
-                not dead
-            )
-
-
-        let enemySpawner = world.CreateEntity ()
-        enemySpawner.Attach <| EnemySpawner(3f, 4u)
-        let enemySpawnerTransform = Transform2 (Vector2(800f, 50f))
-        enemySpawner.Attach enemySpawnerTransform
-        enemySpawner.Attach <| TweenTransformer (TweenTransformer.MoveTweener(
-            enemySpawnerTransform, 
-            enemySpawnerTransform.Position + Vector2.UnitX * 400f,
-            2f, 0f, 
-            EasingFunctions.CubicInOut
-        ))
-        enemySpawner.Attach <| Dot Color.Aquamarine
-        enemySpawner.Attach <| SizeComponent 5f
 
         this.Components.Add world
 
@@ -255,7 +164,7 @@ type DanmakuGame (game, graphics) =
 
         spriteBatch.Begin (transformMatrix = camera.GetViewMatrix())
         spriteBatch.FillRectangle (playerBoundaries, Color.DarkSalmon)
-        spriteBatch.DrawString (fira, "Danmaku", Vector2(300f, 300f), Color.WhiteSmoke)
+        spriteBatch.DrawString (fira, "Bookshop", Vector2(300f, 300f), Color.WhiteSmoke)
 
         spriteBatch.End ()
 

@@ -37,6 +37,7 @@ type Game1() as x =
             (fun _ -> new SpaceGame(x, graphics));
             (fun _ -> new DebugScene(x, graphics));
             (fun _ -> new Test1.TestGame1(x, graphics))
+            (fun _ -> new Bookshop.BookShopGame(x, graphics))
         ]
 
     do screenCalls <- (fun _ -> new MainMenu.MainMenu(x, graphics, screenCalls)) :: screenCalls
@@ -86,6 +87,8 @@ type Game1() as x =
                 screenManager.LoadScreen(screenCalls[4] (), new FadeTransition(this.GraphicsDevice, Color.Blue, 1f))
             | Keys.D5 ->
                 screenManager.LoadScreen(screenCalls[0] (), new FadeTransition(this.GraphicsDevice, Color.Orange, 1f))
+            | Keys.D6 ->
+                screenManager.LoadScreen(screenCalls[5] (), new FadeTransition(this.GraphicsDevice, Color.Beige, 1f))
             | _ -> ()
            
             

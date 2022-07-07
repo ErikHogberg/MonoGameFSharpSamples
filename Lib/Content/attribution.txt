@@ -1,0 +1,2 @@
+tiled/iso-64x64-building.png    |   CC BY 3.0 license   |   https://opengameart.org/content/isometric-64x64-medieval-building-tileset
+tiled/iso-64x64-outside.png     |   CC BY 3.0 license   |   https://opengameart.org/content/isometric-64x64-outside-tileset
