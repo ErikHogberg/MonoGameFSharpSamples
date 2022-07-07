@@ -33,5 +33,8 @@ Install [Visual Studio Code](https://code.visualstudio.com/Download).
 Install the [Ionide-fsharp](https://marketplace.visualstudio.com/items?itemName=Ionide.Ionide-fsharp) extension.
 
 ## Credits
-./Lib/Content/tiled/iso-64x64-building.png    |   CC BY 3.0 license   |   https://opengameart.org/content/isometric-64x64-medieval-building-tileset
-./Lib/Content/tiled/iso-64x64-outside.png     |   CC BY 3.0 license   |   https://opengameart.org/content/isometric-64x64-outside-tileset
+
+| Resource | License | Source |
+|----------|---------|--------|
+|./Lib/Content/tiled/iso-64x64-building.png    |   CC BY 3.0 license   |   https://opengameart.org/content/isometric-64x64-medieval-building-tileset |
+|./Lib/Content/tiled/iso-64x64-outside.png     |   CC BY 3.0 license   |   https://opengameart.org/content/isometric-64x64-outside-tileset |
