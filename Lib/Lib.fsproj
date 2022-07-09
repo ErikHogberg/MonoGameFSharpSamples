@@ -12,6 +12,7 @@
     <PackageReference Include="MonoGame.Extended.Collisions" Version="3.8.0" />
     <PackageReference Include="MonoGame.Extended.Tiled" Version="3.8.0" />
     <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.8.0" />
+    <PackageReference Include="Myra" Version="1.4" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parts/ECS.fs" />
@@ -29,6 +30,7 @@
     <Compile Include="Danmaku/DanmakuEnemy.fs" />
     <Compile Include="Danmaku/Danmaku.fs" />
     <Compile Include="Bookshop/Bookshop.fs" />
+    <Compile Include="CardGame/CardGame.fs" />
     <Compile Include="Misc/Test1.fs" />
     <Compile Include="Misc/MainMenu.fs" />
     <Compile Include="SpaceTactics/SpaceTactics.fs" />

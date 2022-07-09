@@ -169,12 +169,12 @@ type BookShopGame (game, graphics) =
 
     override this.Update gameTime =
         tiledMapRenderer.Update gameTime
-        camera.LookAt(playerTransform.Position);
         base.Update gameTime
 
     override this.Draw gameTime =
-        this.GraphicsDevice.Clear Color.PaleVioletRed
+        camera.LookAt(playerTransform.Position);
         
+        this.GraphicsDevice.Clear Color.PaleVioletRed
 
         spriteBatch.Begin (transformMatrix = camera.GetViewMatrix())
         spriteBatch.FillRectangle (playerBoundaries, Color.DarkSalmon)

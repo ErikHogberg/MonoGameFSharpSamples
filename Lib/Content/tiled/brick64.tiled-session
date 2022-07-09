@@ -3,17 +3,17 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "third.tmx",
+    "activeFile": "first.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "fileStates": {
         "first.tmx": {
-            "scale": 0.5,
+            "scale": 1,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 801,
-                "y": 400
+                "x": 258.5,
+                "y": 367
             }
         },
         "first.tsx": {
@@ -54,8 +54,8 @@
     ],
     "project": "brick64.tiled-project",
     "recentFiles": [
-        "first.tmx",
         "third.tmx",
+        "first.tmx",
         "first.tsx",
         "third.tsx",
         "second.tmx"
