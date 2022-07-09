@@ -10,6 +10,7 @@
 
 #-------------------------------- References --------------------------------#
 
+/reference:\Users\Goose\.nuget\packages\monogame.extended.content.pipeline\3.8.0\tools\MonoGame.Extended.Content.Pipeline.dll
 
 #---------------------------------- Content ---------------------------------#
 
@@ -43,4 +44,9 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:ship.png
+
+#begin tiled/first.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:tiled/first.tmx
 

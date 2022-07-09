@@ -9,11 +9,11 @@
     ],
     "fileStates": {
         "first.tmx": {
-            "scale": 0.25,
-            "selectedLayer": 0,
+            "scale": 0.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 1094,
-                "y": 304
+                "x": 801,
+                "y": 400
             }
         },
         "first.tsx": {
@@ -30,29 +30,35 @@
         },
         "third.tmx": {
             "scale": 1,
-            "selectedLayer": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 883.5,
-                "y": -169
+                "x": 638.5,
+                "y": -1
             }
+        },
+        "third.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
     "last.imagePath": "C:/dev/Projekt/MonoGameFSharpSamples/Lib/Content/tiled",
-    "map.fixedSize": false,
+    "map.fixedSize": true,
     "map.lastUsedFormat": "tmx",
     "map.layerDataFormat": null,
     "map.orientation": null,
     "map.tileHeight": 32,
     "map.tileWidth": 64,
     "openFiles": [
-        "third.tmx"
+        "third.tmx",
+        "first.tmx"
     ],
     "project": "brick64.tiled-project",
     "recentFiles": [
-        "third.tmx",
-        "second.tmx",
         "first.tmx",
-        "first.tsx"
+        "third.tmx",
+        "first.tsx",
+        "third.tsx",
+        "second.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

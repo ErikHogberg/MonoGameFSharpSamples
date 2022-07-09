@@ -13,6 +13,8 @@ open MonoGame.Extended.Entities
 open MonoGame.Extended.Sprites
 open MonoGame.Extended.ViewportAdapters
 open MonoGame.Extended.Tweening
+open MonoGame.Extended.Tiled
+open MonoGame.Extended.Tiled.Renderers
 
 open GameScreenWithComponents
 open Tools
@@ -25,6 +27,9 @@ type BookShopGame (game, graphics) =
     let mutable fira: SpriteFont = null
     let mutable camera: OrthographicCamera = null
     let mutable spriteBatch: SpriteBatch = null//Unchecked.defaultof<SpriteBatch>
+
+    let mutable tiledMap: TiledMap = null
+    let mutable tiledMapRenderer: TiledMapRenderer = null
 
     let playerSpeed = 400f;
     // let playerTransform = Transform2 (Vector2(300f, 600f))
@@ -50,7 +55,7 @@ type BookShopGame (game, graphics) =
 
 
     let playerTransform = Transform2 (Vector2(300f, 600f))
-    let playerBoundaries = RectangleF (Point2(600f, 50f), Size2(700f, 1000f))
+    let playerBoundaries = RectangleF (Point2(-500f, 50f), Size2(2000f, 1000f))
     let playerMover = ConstrainedTransform ()
 
     do playerMover.Speed <- PlayerSpeedEval ()
@@ -130,6 +135,10 @@ type BookShopGame (game, graphics) =
 
 
     override this.LoadContent () =
+
+        tiledMap <- this.Content.Load<TiledMap> "tiled/first"
+        tiledMapRenderer <- new TiledMapRenderer(this.GraphicsDevice, tiledMap)
+
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
 
         fira <- this.Content.Load "Fira Code"
@@ -158,15 +167,21 @@ type BookShopGame (game, graphics) =
 
         base.LoadContent ()
 
+    override this.Update gameTime =
+        tiledMapRenderer.Update gameTime
+        camera.LookAt(playerTransform.Position);
+        base.Update gameTime
 
-    override this.Draw (gameTime) =
+    override this.Draw gameTime =
         this.GraphicsDevice.Clear Color.PaleVioletRed
+        
 
         spriteBatch.Begin (transformMatrix = camera.GetViewMatrix())
         spriteBatch.FillRectangle (playerBoundaries, Color.DarkSalmon)
         spriteBatch.DrawString (fira, "Bookshop", Vector2(300f, 300f), Color.WhiteSmoke)
-
         spriteBatch.End ()
+
+        tiledMapRenderer.Draw(camera.GetViewMatrix());
 
         base.Draw gameTime
 
