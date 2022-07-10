@@ -34,10 +34,9 @@ type CardGame (game, graphics) =
 
     let mutable desktop: Desktop = null;
 
-    let mouseListener = MouseListener ()
-    let touchListener = TouchListener ()
-    let kbdListener = KeyboardListener ()
-
+    // let mouseListener = MouseListener ()
+    // let touchListener = TouchListener ()
+    // let kbdListener = KeyboardListener ()
 
     override this.Initialize () =
         
@@ -46,25 +45,23 @@ type CardGame (game, graphics) =
 
         camera <- OrthographicCamera viewportAdapter
 
+        // let listenerComponent =
+        //     new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
 
-        let listenerComponent =
-            new InputListenerComponent(this.Game, mouseListener, touchListener, kbdListener)
+        // this.Components.Add listenerComponent
 
-        this.Components.Add listenerComponent
-
-        kbdListener.KeyPressed.Add <| fun args  ->
-            match args.Key with 
-            | Keys.E ->
-                ()
-            | _ -> ()
-
+        // kbdListener.KeyPressed.Add <| fun args  ->
+        //     match args.Key with 
+        //     | Keys.E ->
+        //         ()
+        //     | _ -> ()
 
         // kbdListener.KeyReleased.Add <| fun args ->
         //     match args.Key with 
         //     | Keys.E ->
         //         ()
         //     | _ -> ()
-            
+
         base.Initialize ()
 
 
@@ -112,22 +109,24 @@ type CardGame (game, graphics) =
         grid.Widgets.Add(helloWorld);
 
         // ComboBox
-        let combo = ComboBox (
-            GridColumn = 1,
-            GridRow = 0
+        let combo = 
+            ComboBox (
+                GridColumn = 1,
+                GridRow = 0
             )
 
-        combo.Items.Add <| ListItem("Red", Color.Red)
-        combo.Items.Add <| ListItem("Green", Color.Green)
-        combo.Items.Add <| ListItem("Blue", Color.Blue)
+        combo.Items.Add <| ListItem ("Red", Color.Red)
+        combo.Items.Add <| ListItem ("Green", Color.Green)
+        combo.Items.Add <| ListItem ("Blue", Color.Blue)
         grid.Widgets.Add combo
 
         // Button
-        let button = TextButton (
-            GridColumn = 0,
-            GridRow = 1,
-            Text = "Show"
-        )
+        let button = 
+            TextButton (
+                GridColumn = 0,
+                GridRow = 1,
+                Text = "Show"
+            )
 
         button.Click.Add(fun a ->
             let messageBox = Dialog.CreateMessageBox("Message", "Some message!")
@@ -158,12 +157,12 @@ type CardGame (game, graphics) =
 
         let _ = panel.AddChild label
 
-        let data = System.IO.File.ReadAllText(AppContext.BaseDirectory + "/Raw/myra/card.xmmp")
+        let data = System.IO.File.ReadAllText $"{AppContext.BaseDirectory}/Raw/myra/card.xmmp"
         
         let portraits = [
-            (this.Content.Load<Texture2D> "ship");
-            (this.Content.Load<Texture2D> "1px");
-            (this.Content.Load<Texture2D> "ship");
+            this.Content.Load<Texture2D> "ship";
+            this.Content.Load<Texture2D> "1px";
+            this.Content.Load<Texture2D> "ship";
         ]
         
         let horLayout = HorizontalStackPanel ()
@@ -175,7 +174,12 @@ type CardGame (game, graphics) =
             let project = Project.LoadFromXml data
             
             let portraitImage = (project.Root.FindWidgetById "portrait") :?> Image
-            portraitImage.Renderable <- Myra.Graphics2D.TextureAtlases.TextureRegion (portrait)
+            portraitImage.Renderable <- Graphics2D.TextureAtlases.TextureRegion portrait
+
+            let cardName = (project.Root.FindWidgetById "name") :?> Label
+            cardName.Text <- portrait.Name
+
+            project.Root.TouchDown.Add(fun a -> Console.WriteLine($"pressed {portrait.Name}"))
 
             let _ = horLayout.AddChild project.Root
             ()
@@ -192,11 +196,6 @@ type CardGame (game, graphics) =
     override this.Draw gameTime =
         
         this.GraphicsDevice.Clear Color.PaleVioletRed
-
-        // spriteBatch.Begin ()
-        // // spriteBatch.Begin (transformMatrix = camera.GetViewMatrix())
-        // spriteBatch.DrawString (fira, "Card game", Vector2(100f, 100f), Color.WhiteSmoke)
-        // spriteBatch.End ()
         
         desktop.Render ()
 

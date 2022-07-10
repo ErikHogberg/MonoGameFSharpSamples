@@ -1,15 +1,9 @@
 <Project>
-  <Panel VerticalAlignment="Top" Width="250" Height="280" BorderThickness="4" ZIndex="-3" Background="#CF56BFFF" Border="#FF9503FF" >
-    <Label Text="Card" HorizontalAlignment="Center" VerticalAlignment="Top" Id="name" />
+  <Panel VerticalAlignment="Top" Width="200" Height="280" BorderThickness="4" ZIndex="-3" Background="#CF56BFFF" Border="#FF9503FF" >
+    <Label Text="Card" HorizontalAlignment="Center" VerticalAlignment="Top" Id="title" />
     <VerticalStackPanel VerticalAlignment="Center">
       <Image Renderable="../../ship.png" Width="50" Height="50" HorizontalAlignment="Center" Background="#0000FF" Id="portrait" />
-      <ComboBox HorizontalAlignment="Center">
-      <ListItem Text="Red" Color="#FF0000FF" />
-      <ListItem Text="Green" Color="#008000FF" />
-      <ListItem Text="Blue" Color="#0000FFFF" />
-    </ComboBox>
-    <Button Text="Show" HorizontalAlignment="Center" VerticalAlignment="Center" GridRow="1" />
+      <Label Text="" HorizontalAlignment="Center" Id="name" />
      </VerticalStackPanel>
-      <SpinButton Nullable="True" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="100" />
   </Panel>
 </Project>
