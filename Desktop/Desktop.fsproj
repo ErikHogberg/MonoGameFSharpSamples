@@ -23,8 +23,8 @@
     <ProjectReference Include="..\Lib\Lib.fsproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Lib\Content\bin\DesktopGL\*\*.xnb" CopyToOutputDirectory="PreserveNewest" LinkBase="Content\" />
-    <None Include="..\Lib\Content\bin\DesktopGL\*.xnb" CopyToOutputDirectory="PreserveNewest" LinkBase="Content\" />
+    <None Include="..\Lib\Content\bin\DesktopGL\**\*.xnb" CopyToOutputDirectory="PreserveNewest" LinkBase="Content\" />
+    <None Include="..\Lib\Content\raw\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Raw\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.3" />

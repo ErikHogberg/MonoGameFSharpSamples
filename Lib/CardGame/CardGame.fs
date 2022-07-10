@@ -23,6 +23,7 @@ open GameScreenWithComponents
 open Tools      
 open TransformUpdater
 open RenderSystem
+open System.IO
 
 type CardGame (game, graphics) =
     inherit GameScreenWithComponents (game, graphics)
@@ -99,10 +100,10 @@ type CardGame (game, graphics) =
                 ColumnSpacing = 8
             )
 
-        grid.ColumnsProportions.Add(new Proportion(ProportionType.Auto));
-        grid.ColumnsProportions.Add(new Proportion(ProportionType.Auto));
-        grid.RowsProportions.Add(new Proportion(ProportionType.Auto));
-        grid.RowsProportions.Add(new Proportion(ProportionType.Auto));
+        grid.ColumnsProportions.Add <| Proportion(ProportionType.Auto)
+        grid.ColumnsProportions.Add <| Proportion(ProportionType.Auto)
+        grid.RowsProportions.Add <| Proportion(ProportionType.Auto)
+        grid.RowsProportions.Add <| Proportion(ProportionType.Auto)
 
         let helloWorld = Label (
             Id = "label",
@@ -116,9 +117,9 @@ type CardGame (game, graphics) =
             GridRow = 0
             )
 
-        combo.Items.Add <| new ListItem("Red", Color.Red)
-        combo.Items.Add <| new ListItem("Green", Color.Green)
-        combo.Items.Add <| new ListItem("Blue", Color.Blue)
+        combo.Items.Add <| ListItem("Red", Color.Red)
+        combo.Items.Add <| ListItem("Green", Color.Green)
+        combo.Items.Add <| ListItem("Blue", Color.Blue)
         grid.Widgets.Add combo
 
         // Button
@@ -144,9 +145,46 @@ type CardGame (game, graphics) =
         )
         grid.Widgets.Add spinButton
 
+        let panel = Panel ()
+
+        grid.Left <- 200
+        grid.Top <- 100
+        let _ = panel.AddChild grid
+
+        let label = Label ()
+        label.Text <- "Card Game"
+        label.Left <- 150
+        label.Top <- 50
+
+        let _ = panel.AddChild label
+
+        let data = System.IO.File.ReadAllText(AppContext.BaseDirectory + "/Raw/myra/card.xmmp")
+        
+        let portraits = [
+            (this.Content.Load<Texture2D> "ship");
+            (this.Content.Load<Texture2D> "1px");
+            (this.Content.Load<Texture2D> "ship");
+        ]
+        
+        let horLayout = HorizontalStackPanel ()
+        
+        horLayout.Top <- 400
+        horLayout.Left <- 400
+
+        for portrait in portraits do
+            let project = Project.LoadFromXml data
+            
+            let portraitImage = (project.Root.FindWidgetById "portrait") :?> Image
+            portraitImage.Renderable <- Myra.Graphics2D.TextureAtlases.TextureRegion (portrait)
+
+            let _ = horLayout.AddChild project.Root
+            ()
+
+        let _ = panel.AddChild horLayout
+
         // Add it to the desktop
         desktop <- Desktop ()
-        desktop.Root <- grid
+        desktop.Root <- panel
 
         base.LoadContent ()
 
@@ -155,9 +193,10 @@ type CardGame (game, graphics) =
         
         this.GraphicsDevice.Clear Color.PaleVioletRed
 
-        spriteBatch.Begin (transformMatrix = camera.GetViewMatrix())
-        spriteBatch.DrawString (fira, "Card game", Vector2(300f, 300f), Color.WhiteSmoke)
-        spriteBatch.End ()
+        // spriteBatch.Begin ()
+        // // spriteBatch.Begin (transformMatrix = camera.GetViewMatrix())
+        // spriteBatch.DrawString (fira, "Card game", Vector2(100f, 100f), Color.WhiteSmoke)
+        // spriteBatch.End ()
         
         desktop.Render ()
 
