@@ -6,7 +6,6 @@ open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics
 
 open MonoGame.Extended
-open MonoGame.Extended.Entities
 open MonoGame.Extended.ViewportAdapters
 
 open Myra
@@ -14,8 +13,6 @@ open Myra.Graphics2D.UI
 
 open GameScreenWithComponents
 open Tools      
-open TransformUpdater
-open RenderSystem
 
 type CardGame (game, graphics) =
     inherit GameScreenWithComponents (game, graphics)

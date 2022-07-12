@@ -21,16 +21,12 @@ type Game1() as x =
     do x.Content.RootDirectory <- "Content"
 
     let graphics = new GraphicsDeviceManager(x)
-    let mutable spriteBatch: SpriteBatch = null
 
     let mouseListener = MouseListener ()
     let touchListener = TouchListener ()
     let kbdListener = KeyboardListener ()
 
     let screenManager = new ScreenManager()
-
-    let mutable camera: OrthographicCamera = null
-    let mutable dot: Texture2D = null
 
     let mutable screenCalls: (unit -> GameScreenWithComponents) list = [
             (fun _ -> (new DanmakuGame(x, graphics)));
@@ -94,31 +90,12 @@ type Game1() as x =
                 screenManager.LoadScreen(screenCalls[6] (), new FadeTransition(this.GraphicsDevice, Color.Beige, 1f))
             | _ -> ()
            
-            
-
-        let viewportAdapter =
-            // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1280, 720)
-            // new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 1920, 1080)
-            new BoxingViewportAdapter(this.Window, this.GraphicsDevice, 16, 9)
-
-        camera <- OrthographicCamera viewportAdapter
 
         base.Initialize()
 
     override this.LoadContent() =
-        spriteBatch <- new SpriteBatch(this.GraphicsDevice)
-
-        // printfn "content root: %s" this.Content.RootDirectory
-        dot <- this.Content.Load "1px"
-
 
         screenManager.LoadScreen(screenCalls.Head (), new FadeTransition(this.GraphicsDevice, Color.Black, 1f))
 
         ()
 
-    // override this.Update(gameTime) =
-        // base.Update gameTime
-
-    override this.Draw gameTime =
-        this.GraphicsDevice.Clear Color.CornflowerBlue
-        base.Draw gameTime
