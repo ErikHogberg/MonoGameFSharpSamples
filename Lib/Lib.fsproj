@@ -4,15 +4,15 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MonoGame.Extended" Version="3.8.0" />
-    <PackageReference Include="MonoGame.Extended.Input" Version="3.8.0" />
-    <PackageReference Include="MonoGame.Extended.Entities" Version="3.8.0" />
-    <PackageReference Include="MonoGame.Extended.Tweening" Version="3.8.0" />
-    <PackageReference Include="MonoGame.Framework.Portable" Version="3.7.1.189" />
-    <PackageReference Include="MonoGame.Extended.Collisions" Version="3.8.0" />
-    <PackageReference Include="MonoGame.Extended.Tiled" Version="3.8.0" />
-    <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.8.0" />
-    <PackageReference Include="Myra" Version="1.4" />
+    <PackageReference Include="MonoGame.Extended" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Extended.Input" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Extended.Entities" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Extended.Tweening" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Framework.Portable" Version="3.7.*" />
+    <PackageReference Include="MonoGame.Extended.Collisions" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Extended.Tiled" Version="3.8.*" />
+    <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.8.*" />
+    <PackageReference Include="Myra" Version="1.4.*" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Parts/ECS.fs" />
